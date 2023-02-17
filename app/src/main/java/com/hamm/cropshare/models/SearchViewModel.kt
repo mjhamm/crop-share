@@ -1,4 +1,4 @@
-package com.hamm.cropshare.ui.search
+package com.hamm.cropshare.models
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData

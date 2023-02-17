@@ -11,6 +11,10 @@
         layout="@layout/layout_store_login_screen"
         android:visibility="gone"/>
 
+    <include android:id="@+id/create_new_store_container"
+        layout="@layout/layout_create_store"
+        android:visibility="gone"/>
+
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/store_layout_container"
         android:layout_width="match_parent"

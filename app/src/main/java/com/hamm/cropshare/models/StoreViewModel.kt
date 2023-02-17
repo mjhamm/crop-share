@@ -1,14 +1,19 @@
-package com.hamm.cropshare.ui.store
+package com.hamm.cropshare.models
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.hamm.cropshare.data.SellAmount
 import com.hamm.cropshare.data.StoreItem
+import com.hamm.cropshare.helpers.FirebaseHelper
 
 class StoreViewModel : ViewModel() {
 
     private var items = mutableListOf<StoreItem>()
+
+    private var _storeName = MutableLiveData<String>()
+    val storeName: LiveData<String>
+        get() = _storeName
 
     fun getMyStoreItems() = items
 
@@ -28,5 +33,9 @@ class StoreViewModel : ViewModel() {
         }
     }
 
+    fun createNewStore(userId: String) {
+        FirebaseHelper().fireStoreDatabase.collection("stores")
+            .document(userId)
+    }
 
 }

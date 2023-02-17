@@ -27,6 +27,7 @@ import com.hamm.cropshare.databinding.FragmentStoreBinding
 import com.hamm.cropshare.databinding.LayoutEditStoreItemBottomSheetBinding
 import com.hamm.cropshare.extensions.*
 import com.hamm.cropshare.listeners.StoreItemClickListener
+import com.hamm.cropshare.models.StoreViewModel
 import com.hamm.cropshare.models.UserViewModel
 
 
@@ -62,17 +63,6 @@ class StoreFragment : Fragment(), StoreItemClickListener {
         return root
     }
 
-    private fun reloadUI(isUserLoggedIn: Boolean) {
-        if (isUserLoggedIn) {
-            binding.storeLayoutContainer.show()
-            binding.storeLoginFlowContainer.root.hide()
-        } else {
-            binding.storeLayoutContainer.hide()
-            binding.storeLoginFlowContainer.root.show()
-        }
-        updateScreen(isUserLoggedIn)
-    }
-
     private fun observeData() {
         userViewModel.isLoggedIn.observe(viewLifecycleOwner) { updateScreen(it) }
     }
@@ -103,7 +93,6 @@ class StoreFragment : Fragment(), StoreItemClickListener {
                 }
                 return false
             }
-
         })
     }
 
@@ -114,10 +103,6 @@ class StoreFragment : Fragment(), StoreItemClickListener {
 
     private fun getStoreName(): String {
         return "Hamm Homestead"
-    }
-
-    private fun updateStoreName() {
-        // Send updated name to server as well as keep in cache
     }
 
     /**
@@ -249,6 +234,8 @@ class StoreFragment : Fragment(), StoreItemClickListener {
 
     private fun updateScreen(isUserLoggedIn: Boolean) {
         if (isUserLoggedIn) {
+            binding.storeLoginFlowContainer.root.hide()
+            binding.storeLayoutContainer.show()
             adapter = MyStoreAdapter(this)
 
             storeViewModel.getMyStoreItems().let {

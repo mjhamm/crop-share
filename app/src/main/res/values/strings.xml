@@ -5,4 +5,8 @@
     <string name="title_account">Account</string>
     <string name="title_register">Register</string>
     <string name="title_login">Login</string>
+
+    <!-- Registration & Login -->
+    <string name="already_have_account"><u><b>Already have an account?</b></u></string>
+    <string name="dont_have_account"><u><b>Don\'t have an account?</b></u></string>
 </resources>

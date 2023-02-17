@@ -1,6 +1,9 @@
 package com.hamm.cropshare.ui.login
 
 import android.os.Bundle
+import android.text.InputType
+import android.text.method.HideReturnsTransformationMethod
+import android.text.method.PasswordTransformationMethod
 import android.util.Patterns
 import android.view.LayoutInflater
 import android.view.View
@@ -46,6 +49,15 @@ class LoginFragment: Fragment() {
         binding.loginButton.setOnClickListener {
             loginUser()
         }
+
+        binding.showHidePassword.setOnCheckedChangeListener { _, isChecked ->
+            if (isChecked) {
+                binding.loginPasswordEdittext.transformationMethod = HideReturnsTransformationMethod.getInstance()
+            } else {
+                binding.loginPasswordEdittext.transformationMethod = PasswordTransformationMethod.getInstance()
+            }
+        }
+
         binding.registerTextview.setOnClickListener {
             if (!findNavController().popBackStack(R.id.navigation_register, false)) {
                 val action = LoginFragmentDirections.actionNavigationLoginToNavigationRegister()

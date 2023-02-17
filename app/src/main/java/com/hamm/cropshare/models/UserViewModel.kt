@@ -57,13 +57,21 @@ class UserViewModel: ViewModel() {
     }
 
     fun userDeleteAccount() {
+        val uid = FirebaseHelper().firebaseAuth.currentUser?.uid
         _isLoading.value = true
 
-        FirebaseHelper().firebaseAuth.currentUser?.delete()
-            ?.addOnSuccessListener {
+        FirebaseHelper().firebaseAuth.currentUser?.let {
+            it.delete().addOnSuccessListener {
                 _isLoggedIn.value = false
                 _isLoading.value = false
             }
+        }
+
+        uid?.let {
+            FirebaseHelper().fireStoreDatabase.collection("users")
+                .document(it)
+                .delete()
+        }
     }
 
     fun userCreateInDB(userId: String) {

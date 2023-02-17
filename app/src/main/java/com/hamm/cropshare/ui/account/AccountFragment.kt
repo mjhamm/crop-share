@@ -79,7 +79,8 @@ class AccountFragment : Fragment() {
             override fun onTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {}
 
             override fun afterTextChanged(p0: Editable?) {
-                binding.updateZipcodeButton.isEnabled = p0?.toString() != currentZipCode.toString()
+                binding.updateZipcodeButton.isEnabled =
+                    !(p0?.isEmpty() == true || p0?.toString() == currentZipCode.toString())
             }
         })
 

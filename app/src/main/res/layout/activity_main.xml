@@ -9,19 +9,20 @@
         android:id="@+id/nav_view"
         android:layout_width="0dp"
         android:layout_height="60dp"
-        android:layout_marginStart="0dp"
-        android:layout_marginEnd="0dp"
         android:background="@drawable/bottom_nav_bar_background"
         app:backgroundTint="@color/secondary_green"
         app:itemIconTint="@color/white"
+        app:itemBackground="@drawable/bottom_nav_items"
         android:layout_marginHorizontal="16dp"
         android:layout_marginBottom="16dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
         app:labelVisibilityMode="unlabeled"
+        app:itemTextColor="@color/white"
+        app:itemRippleColor="@color/secondary_green"
         app:itemIconSize="24dp"
-        app:elevation="2dp"
+        app:elevation="4dp"
         app:menu="@menu/bottom_nav_menu" />
 
     <androidx.fragment.app.FragmentContainerView

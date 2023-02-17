@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "762821587781",
+    "project_id": "crop-share",
+    "storage_bucket": "crop-share.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:762821587781:android:de1c1b2bb3f7f7670b442c",
+        "android_client_info": {
+          "package_name": "com.hamm.cropshare"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "762821587781-fjq4nbdt50u2oo322n6lsc7lj0o8vhnr.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB8MPaY3yNBA5uKQKb5jdBj84ThV_YrxvI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "762821587781-fjq4nbdt50u2oo322n6lsc7lj0o8vhnr.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

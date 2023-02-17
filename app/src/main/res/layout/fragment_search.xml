@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".ui.search.SearchFragment">
+
+    <TextView
+        android:id="@+id/zip_textview"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="@id/zip_edittext"
+        android:layout_marginTop="16dp"
+        android:text="Zip Code"/>
+
+    <EditText
+        android:id="@+id/zip_edittext"
+        android:layout_width="match_parent"
+        android:layout_height="40dp"
+        android:layout_marginHorizontal="16dp"
+        android:layout_marginTop="4dp"
+        android:paddingHorizontal="16dp"
+        android:maxLines="1"
+        android:maxLength="5"
+        android:inputType="phone"
+        android:imeOptions="actionDone"
+        android:background="@drawable/background_edittext"
+        app:layout_constraintTop_toBottomOf="@id/zip_textview"/>
+
+    <TextView
+        android:id="@+id/radius_textview"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintTop_toBottomOf="@id/zip_edittext"
+        app:layout_constraintStart_toStartOf="@id/radius_dropdown"
+        android:layout_marginTop="16dp"
+        android:text="Radius"/>
+
+    <Spinner
+        android:id="@+id/radius_dropdown"
+        android:layout_width="match_parent"
+        android:layout_height="40dp"
+        android:layout_marginHorizontal="16dp"
+        android:layout_marginTop="4dp"
+        android:paddingHorizontal="16dp"
+        android:background="@drawable/background_edittext"
+        app:layout_constraintTop_toBottomOf="@id/radius_textview"/>
+
+    <TextView
+        android:id="@+id/crop_textview"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintTop_toBottomOf="@id/radius_dropdown"
+        app:layout_constraintStart_toStartOf="@id/crop_edittext"
+        android:layout_marginTop="16dp"
+        android:text="Crop"/>
+
+    <EditText
+        android:id="@+id/crop_edittext"
+        android:layout_width="match_parent"
+        android:layout_height="40dp"
+        android:layout_marginHorizontal="16dp"
+        android:layout_marginTop="4dp"
+        android:paddingHorizontal="16dp"
+        android:background="@drawable/background_edittext"
+        app:layout_constraintTop_toBottomOf="@id/crop_textview"/>
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/find_stores_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintTop_toBottomOf="@id/crop_edittext"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginTop="16dp"
+        app:cornerRadius="45dp"
+        android:text="Find Stores"/>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

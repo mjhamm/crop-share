@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:background="@drawable/bottom_sheet_background"
+    android:paddingBottom="24dp">
+
+    <EditText
+        android:id="@+id/update_item_name"
+        app:layout_constraintTop_toTopOf="parent"
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:layout_marginTop="24dp"
+        android:inputType="text"
+        android:maxLines="1"
+        android:hint="Item Name"
+        android:background="@drawable/background_edittext"
+        android:layout_marginHorizontal="16dp"
+        android:paddingHorizontal="16dp"/>
+
+    <EditText
+        android:id="@+id/update_item_price"
+        app:layout_constraintTop_toBottomOf="@id/update_item_name"
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:layout_marginTop="24dp"
+        android:inputType="numberDecimal"
+        android:maxLines="1"
+        android:hint="Item Price"
+        android:maxLength="4"
+        android:background="@drawable/background_edittext"
+        android:layout_marginHorizontal="16dp"
+        android:paddingHorizontal="16dp"/>
+
+    <EditText
+        android:id="@+id/update_item_quantity_type"
+        app:layout_constraintTop_toBottomOf="@id/update_item_price"
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:layout_marginTop="24dp"
+        android:inputType="text"
+        android:maxLines="1"
+        android:hint="Quantity Type (ex. Per Lb., Per oz., Each)"
+        android:background="@drawable/background_edittext"
+        android:layout_marginHorizontal="16dp"
+        android:paddingHorizontal="16dp"/>
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/save_item_changes_button"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Update Item"
+        app:layout_constraintTop_toBottomOf="@id/update_item_quantity_type"
+        android:layout_marginTop="16dp"
+        android:layout_marginHorizontal="16dp"
+        app:cornerRadius="45dp"/>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

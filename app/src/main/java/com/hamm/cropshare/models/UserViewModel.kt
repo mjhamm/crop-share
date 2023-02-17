@@ -3,9 +3,11 @@ package com.hamm.cropshare.models
 import android.os.Handler
 import android.os.Looper
 import android.util.Log
+import android.util.Patterns
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import com.hamm.cropshare.data.Constants
 import com.hamm.cropshare.helpers.FirebaseHelper
 
 class UserViewModel: ViewModel() {
@@ -21,6 +23,14 @@ class UserViewModel: ViewModel() {
     private var _isLoading = MutableLiveData<Boolean>()
     val isLoading: LiveData<Boolean>
         get() = _isLoading
+
+    private var _zipCodeChange = MutableLiveData<Long>()
+    val zipCodeChange: LiveData<Long>
+        get() = _zipCodeChange
+
+    private var _hasError = MutableLiveData<String>()
+    val hasError: LiveData<String>
+        get() = _hasError
 
     fun userLogin(email: String, password: String) {
         _isLoading.value = true
@@ -78,5 +88,34 @@ class UserViewModel: ViewModel() {
                 _isLoading.value = false
                 _isLoggedIn.value = false
             }
+    }
+
+    fun getUserZipCode() {
+        FirebaseHelper().firebaseAuth.currentUser?.uid?.let {
+            FirebaseHelper().fireStoreDatabase.collection("users")
+                .document(it)
+                .addSnapshotListener { value, _ ->
+                    if (value?.get("zipCode") != null) {
+                        _zipCodeChange.value = value.get("zipCode") as Long
+                    }
+                }
+        }
+    }
+
+    fun userUpdateZipCode(zipCode: Long) {
+        val zipCodeEntry = mapOf(
+            "zipCode" to zipCode
+        )
+        FirebaseHelper().firebaseAuth.currentUser?.uid?.let { uid ->
+            FirebaseHelper().fireStoreDatabase.collection("users")
+                .document(uid)
+                .set(zipCodeEntry)
+                .addOnSuccessListener {
+                    _zipCodeChange.value = zipCode
+                }
+                .addOnFailureListener {
+                    _hasError.value = Constants.ERROR_SETTING_ZIPCODE
+                }
+        }
     }
 }

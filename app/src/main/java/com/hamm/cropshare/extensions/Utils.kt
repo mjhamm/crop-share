@@ -17,7 +17,7 @@ import com.hamm.cropshare.helpers.FirebaseHelper
 
 fun isUpdatedItemValid(storeItem: StoreItem): Boolean {
     storeItem.itemPrice?.let {
-        if (storeItem.itemName?.isEmpty() == true || it < 0 || storeItem.itemSellAmount?.type?.isEmpty() == true) {
+        if (storeItem.itemName?.isEmpty() == true || it < 0 || storeItem.itemQuantityType?.isEmpty() == true) {
             return false
         }
         return true
@@ -44,6 +44,17 @@ fun isUserLoggedIn(): Boolean {
         return true
     }
     return false
+}
+
+fun getCurrentZipCode(): Long? {
+    var zipCode: Long? = null
+    FirebaseHelper().firebaseUserUID?.let {
+        FirebaseHelper().fireStoreDatabase.collection("users").document(it)
+            .addSnapshotListener { value, _ ->
+                zipCode = value?.getLong("zipCode")
+            }
+    }
+    return zipCode
 }
 
 fun View.show() {

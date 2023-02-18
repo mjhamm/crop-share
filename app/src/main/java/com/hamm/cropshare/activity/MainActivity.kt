@@ -20,12 +20,14 @@ import com.hamm.cropshare.extensions.hide
 import com.hamm.cropshare.extensions.isUserLoggedIn
 import com.hamm.cropshare.extensions.show
 import com.hamm.cropshare.helpers.FirebaseHelper
+import com.hamm.cropshare.models.StoreViewModel
 import com.hamm.cropshare.models.UserViewModel
 
 class MainActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMainBinding
     private val userViewModel: UserViewModel by viewModels()
+    private val storeViewModel: StoreViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -45,6 +47,9 @@ class MainActivity : AppCompatActivity() {
         setupBottomNav(navView, navController)
         navView.setupWithNavController(navController)
         observeData(navView)
+
+        userViewModel.doesUserStoreExist()
+        storeViewModel.getStore()
     }
 
     private fun reloadUI(bottomNav: BottomNavigationView, isVisible: Boolean = false) {

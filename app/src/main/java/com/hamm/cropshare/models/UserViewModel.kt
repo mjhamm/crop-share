@@ -7,6 +7,7 @@ import android.util.Patterns
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import com.google.firebase.firestore.QueryDocumentSnapshot
 import com.hamm.cropshare.data.Constants
 import com.hamm.cropshare.helpers.FirebaseHelper
 
@@ -15,6 +16,10 @@ class UserViewModel: ViewModel() {
     private var _isLoggedIn = MutableLiveData<Boolean>()
     val isLoggedIn: LiveData<Boolean>
         get() = _isLoggedIn
+
+    private var _storeExists = MutableLiveData<Boolean>()
+    val storeExists: LiveData<Boolean>
+        get() = _storeExists
 
     private var _userId = MutableLiveData<String>()
     val userId: LiveData<String>
@@ -106,6 +111,17 @@ class UserViewModel: ViewModel() {
                     if (value?.get("zipCode") != null) {
                         _zipCodeChange.value = value.get("zipCode") as Long
                     }
+                }
+        }
+    }
+
+    fun doesUserStoreExist() {
+        FirebaseHelper().firebaseUserUID?.let { uid ->
+            FirebaseHelper().fireStoreDatabase.collection("users")
+                .document(uid)
+                .addSnapshotListener { value, _ ->
+                    val store = value?.get("store")
+                    _storeExists.value = store != null
                 }
         }
     }

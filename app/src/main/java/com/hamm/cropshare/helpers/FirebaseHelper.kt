@@ -11,6 +11,7 @@ class FirebaseHelper {
 
     val fireStoreDatabase = FirebaseFirestore.getInstance()
     val firebaseAuth = Firebase.auth
+    val firebaseUserUID = Firebase.auth.currentUser?.uid
 
     /**
      * Adds a user to Firestore

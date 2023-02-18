@@ -18,7 +18,8 @@
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/store_layout_container"
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="match_parent"
+        android:visibility="visible">
 
         <EditText
             android:id="@+id/store_name_edittext"
@@ -62,16 +63,19 @@
             android:text="Your store is empty."
             android:visibility="gone"/>
 
-        <com.google.android.material.button.MaterialButton
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
             android:id="@+id/add_store_item"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            app:cornerRadius="45dp"
+            android:layout_height="60dp"
+            android:src="@drawable/baseline_add_24"
+            app:tint="@color/white"
             android:text="Add New Store Item"
             app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            android:layout_marginBottom="24dp"/>
+            android:layout_marginEnd="24dp"
+            android:textAllCaps="false"
+            android:textSize="16sp"
+            android:layout_marginBottom="90dp"/>
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 

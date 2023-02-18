@@ -47,7 +47,7 @@ class MyStoreAdapter(
             with(binding) {
                 storeItemName.text = storeItem.itemName
                 storeItemPrice.text = storeItem.getPrice()
-                storeItemQuantity.text = storeItem.itemSellAmount?.type
+                storeItemQuantity.text = storeItem.itemQuantityType
             }
         }
 

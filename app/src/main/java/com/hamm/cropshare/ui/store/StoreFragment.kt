@@ -1,5 +1,6 @@
 package com.hamm.cropshare.ui.store
 
+import android.content.Context
 import android.graphics.Canvas
 import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
@@ -38,6 +39,11 @@ class StoreFragment : Fragment(), StoreItemClickListener {
 
     private var cachedStoreName: String? = null
 
+    private var userHasStore = false
+
+    private var storeName: String? = null
+    private var storeItems = listOf<StoreItem>()
+
     private val storeViewModel: StoreViewModel by activityViewModels()
     private val userViewModel: UserViewModel by activityViewModels()
 
@@ -55,16 +61,76 @@ class StoreFragment : Fragment(), StoreItemClickListener {
         _binding = FragmentStoreBinding.inflate(inflater, container, false)
         val root: View = binding.root
 
-        updateScreen(isUserLoggedIn())
+        adapter = MyStoreAdapter(this)
+
         setupNavigateToLoginFlow()
+        setupButtons()
 
         observeData()
+
+        updateScreen(isUserLoggedIn())
 
         return root
     }
 
+    private fun setupButtons() {
+        binding.createNewStoreContainer.createStoreButton.setOnClickListener {
+            if (isStoreNameValid()) {
+                //storeViewModel.updateStoreName(binding.storeNameEdittext.text.toString())
+            } else {
+                binding.storeNameEdittext.clearFocus()
+                hideKeyboard()
+                createSnackbar(binding.root, "Store Name must not be empty")
+            }
+        }
+    }
+
+    private fun isStoreNameValid(): Boolean {
+        return binding.storeNameEdittext.text.toString().isNotEmpty()
+    }
+
     private fun observeData() {
+        userViewModel.storeExists.observe(viewLifecycleOwner) {
+            updateCreateStoreVisibility(it, isUserLoggedIn())
+        }
         userViewModel.isLoggedIn.observe(viewLifecycleOwner) { updateScreen(it) }
+
+        storeViewModel.store.observe(viewLifecycleOwner) {
+            storeName = it.storeName
+            binding.storeNameEdittext.setText(storeName)
+        }
+
+        storeViewModel.items.observe(viewLifecycleOwner) {
+            if (it.isNotEmpty()) {
+                binding.emptyStoreTextview.hide()
+            } else {
+                binding.emptyStoreTextview.show()
+            }
+            storeItems = it
+            updateData(it)
+        }
+    }
+
+    private fun updateData(storeItems: List<StoreItem>) {
+        adapter?.submitList(storeItems)
+    }
+
+    private fun updateCreateStoreVisibility(storeExists: Boolean, isUserLoggedIn: Boolean) {
+        if (isUserLoggedIn) {
+            if (storeExists) {
+                binding.storeLoginFlowContainer.root.hide()
+                binding.createNewStoreContainer.root.hide()
+                binding.storeLayoutContainer.show()
+            } else {
+                binding.storeLoginFlowContainer.root.hide()
+                binding.createNewStoreContainer.root.show()
+                binding.storeLayoutContainer.hide()
+            }
+        } else {
+            binding.storeLoginFlowContainer.root.show()
+            binding.storeLayoutContainer.hide()
+            binding.createNewStoreContainer.root.hide()
+        }
     }
 
     private fun setupEdittextCursor() {
@@ -74,7 +140,7 @@ class StoreFragment : Fragment(), StoreItemClickListener {
                 when(p1) {
                     EditorInfo.IME_ACTION_DONE -> {
                         return if (p0?.text?.isEmpty() == true) {
-                            binding.storeNameEdittext.setText(getStoreName())
+                            binding.storeNameEdittext.setText(storeName)
                             requireContext().createToast("Your store name cannot be empty")
                             binding.storeNameEdittext.clearFocus()
                             false
@@ -86,6 +152,7 @@ class StoreFragment : Fragment(), StoreItemClickListener {
                                 requireContext().createToast("Store name has been updated")
                                 cachedStoreName = binding.storeNameEdittext.text.toString()
                                 binding.storeNameEdittext.clearFocus()
+                                //storeViewModel.updateStoreName(binding.storeNameEdittext.text.toString())
                                 false
                             }
                         }
@@ -99,10 +166,6 @@ class StoreFragment : Fragment(), StoreItemClickListener {
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
-    }
-
-    private fun getStoreName(): String {
-        return "Hamm Homestead"
     }
 
     /**
@@ -120,10 +183,11 @@ class StoreFragment : Fragment(), StoreItemClickListener {
             val itemQuantityType = dialogBinding.updateItemQuantityType.text.toString()
             val updatedItem = StoreItem(
                 itemName.ifEmpty { storeItem.itemName },
-                SellAmount(itemQuantityType),
+                itemQuantityType,
                 convertPriceToDouble(itemPrice) ?: storeItem.itemPrice)
             if (isUpdatedItemValid(updatedItem)) {
-                storeViewModel.updateStoreItem(position, updatedItem)
+                // TODO
+                //storeViewModel.updateStoreItem(position, updatedItem)
                 adapter?.notifyItemChanged(position)
                 bottomSheet.dismiss()
             } else {
@@ -151,9 +215,10 @@ class StoreFragment : Fragment(), StoreItemClickListener {
             if (itemPrice.isEmpty()) {
                 requireContext().createToast("There is an issue adding your item. Please check empty fields.")
             } else {
-                val addedItem = StoreItem(itemName, SellAmount(itemQuantityType), convertPriceToDouble(itemPrice))
+                val addedItem = StoreItem(itemName, itemQuantityType, convertPriceToDouble(itemPrice))
                 if (isUpdatedItemValid(addedItem)) {
-                    storeViewModel.addNewStoreItem(addedItem)
+                    // TODO
+                    //storeViewModel.addNewStoreItem(addedItem)
                     adapter?.notifyDataSetChanged()
                     bottomSheet.dismiss()
                     binding.emptyStoreTextview.visibility = View.GONE
@@ -180,7 +245,8 @@ class StoreFragment : Fragment(), StoreItemClickListener {
                 val position = viewHolder.adapterPosition
                 when(direction) {
                     ItemTouchHelper.LEFT -> {
-                        storeViewModel.removeStoreItem(position)
+                        // TODO
+//                        storeViewModel.removeStoreItem(position)
                         adapter?.notifyItemRemoved(position)
                         if (adapter?.itemCount == 0) {
                             binding.emptyStoreTextview.visibility = View.VISIBLE
@@ -234,22 +300,20 @@ class StoreFragment : Fragment(), StoreItemClickListener {
 
     private fun updateScreen(isUserLoggedIn: Boolean) {
         if (isUserLoggedIn) {
-            binding.storeLoginFlowContainer.root.hide()
-            binding.storeLayoutContainer.show()
-            adapter = MyStoreAdapter(this)
-
-            storeViewModel.getMyStoreItems().let {
-                adapter?.submitList(it)
-            }
-
-            if (storeViewModel.getMyStoreItems().isEmpty()) {
-                binding.emptyStoreTextview.visibility = View.VISIBLE
+            if (userHasStore) {
+                binding.storeLoginFlowContainer.root.hide()
+                binding.createNewStoreContainer.root.hide()
+                binding.storeLayoutContainer.show()
+            } else {
+                binding.storeLoginFlowContainer.root.hide()
+                binding.createNewStoreContainer.root.show()
+                binding.storeLayoutContainer.hide()
             }
 
             binding.storeItemsList.layoutManager = LinearLayoutManager(this.context)
             binding.storeItemsList.adapter = adapter
-            cachedStoreName = getStoreName()
-            binding.storeNameEdittext.setText(getStoreName())
+            cachedStoreName = storeName
+            binding.storeNameEdittext.setText(storeName)
             setupSwipeRecyclerView()
             setupEdittextCursor()
 
@@ -259,6 +323,7 @@ class StoreFragment : Fragment(), StoreItemClickListener {
         } else {
             binding.storeLoginFlowContainer.root.show()
             binding.storeLayoutContainer.hide()
+            binding.createNewStoreContainer.root.hide()
         }
     }
 

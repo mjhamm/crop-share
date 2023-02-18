@@ -22,7 +22,9 @@ import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.hamm.cropshare.R
 import com.hamm.cropshare.adapters.MyStoreAdapter
+import com.hamm.cropshare.data.Constants.Companion.USER_ZIPCODE_DEFAULT_VALUE
 import com.hamm.cropshare.data.SellAmount
+import com.hamm.cropshare.data.Store
 import com.hamm.cropshare.data.StoreItem
 import com.hamm.cropshare.databinding.FragmentStoreBinding
 import com.hamm.cropshare.databinding.LayoutEditStoreItemBottomSheetBinding
@@ -30,6 +32,7 @@ import com.hamm.cropshare.extensions.*
 import com.hamm.cropshare.listeners.StoreItemClickListener
 import com.hamm.cropshare.models.StoreViewModel
 import com.hamm.cropshare.models.UserViewModel
+import com.hamm.cropshare.prefs
 
 
 class StoreFragment : Fragment(), StoreItemClickListener {
@@ -74,19 +77,34 @@ class StoreFragment : Fragment(), StoreItemClickListener {
     }
 
     private fun setupButtons() {
+        // Create a new store for user
         binding.createNewStoreContainer.createStoreButton.setOnClickListener {
-            if (isStoreNameValid()) {
-                //storeViewModel.updateStoreName(binding.storeNameEdittext.text.toString())
-            } else {
+            prefs.zipCodePref?.let {
+                if (isStoreNameValid() && it != USER_ZIPCODE_DEFAULT_VALUE) {
+                    println(it)
+                    storeViewModel.createNewStore(Store(binding.createNewStoreContainer.newStoreName.text.toString(), emptyList()))
+                    hideKeyboard()
+                    //storeViewModel.updateStoreName(binding.storeNameEdittext.text.toString())
+                } else {
+                    binding.storeNameEdittext.clearFocus()
+                    hideKeyboard()
+                    createSnackbar(binding.root, "Store Name must not be empty")
+                }
+            } ?: run {
                 binding.storeNameEdittext.clearFocus()
                 hideKeyboard()
-                createSnackbar(binding.root, "Store Name must not be empty")
+                createSnackbar(binding.root, "Zip Code must not be empty")
             }
+        }
+
+        // Add new item to store
+        binding.addStoreItem.setOnClickListener {
+            showAddNewItemDialog()
         }
     }
 
     private fun isStoreNameValid(): Boolean {
-        return binding.storeNameEdittext.text.toString().isNotEmpty()
+        return binding.createNewStoreContainer.newStoreName.text.toString().isNotEmpty()
     }
 
     private fun observeData() {
@@ -96,6 +114,7 @@ class StoreFragment : Fragment(), StoreItemClickListener {
         userViewModel.isLoggedIn.observe(viewLifecycleOwner) { updateScreen(it) }
 
         storeViewModel.store.observe(viewLifecycleOwner) {
+            updateCreateStoreVisibility(storeExists = true, isUserLoggedIn = true)
             storeName = it.storeName
             binding.storeNameEdittext.setText(storeName)
         }
@@ -317,9 +336,6 @@ class StoreFragment : Fragment(), StoreItemClickListener {
             setupSwipeRecyclerView()
             setupEdittextCursor()
 
-            binding.addStoreItem.setOnClickListener {
-                showAddNewItemDialog()
-            }
         } else {
             binding.storeLoginFlowContainer.root.show()
             binding.storeLayoutContainer.hide()

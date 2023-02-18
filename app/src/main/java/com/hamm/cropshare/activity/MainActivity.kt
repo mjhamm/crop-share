@@ -15,6 +15,7 @@ import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.ui.setupWithNavController
 import com.hamm.cropshare.R
+import com.hamm.cropshare.data.DataCache
 import com.hamm.cropshare.databinding.ActivityMainBinding
 import com.hamm.cropshare.extensions.hide
 import com.hamm.cropshare.extensions.isUserLoggedIn
@@ -22,6 +23,7 @@ import com.hamm.cropshare.extensions.show
 import com.hamm.cropshare.helpers.FirebaseHelper
 import com.hamm.cropshare.models.StoreViewModel
 import com.hamm.cropshare.models.UserViewModel
+import com.hamm.cropshare.prefs
 
 class MainActivity : AppCompatActivity() {
 
@@ -48,8 +50,8 @@ class MainActivity : AppCompatActivity() {
         navView.setupWithNavController(navController)
         observeData(navView)
 
+        userViewModel.getUserZipCode()
         userViewModel.doesUserStoreExist()
-        storeViewModel.getStore()
     }
 
     private fun reloadUI(bottomNav: BottomNavigationView, isVisible: Boolean = false) {
@@ -59,10 +61,20 @@ class MainActivity : AppCompatActivity() {
 
     private fun observeData(bottomNav: BottomNavigationView) {
         userViewModel.isLoading.observe(this) { showLoading(it) }
+        userViewModel.storeExists.observe(this) {
+            if (it) {
+                storeViewModel.getStore()
+            }
+        }
+
+        userViewModel.zipCodeChange.observe(this) {
+            DataCache(this).zipCodePref = it.toString()
+        }
 
         FirebaseHelper().firebaseAuth.addAuthStateListener {
             if (it.currentUser == null) {
                 reloadUI(bottomNav, false)
+                prefs.zipCodePref = null
             } else {
                 reloadUI(bottomNav, true)
             }

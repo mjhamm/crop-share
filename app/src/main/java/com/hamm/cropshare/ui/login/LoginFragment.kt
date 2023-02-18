@@ -17,6 +17,7 @@ import com.hamm.cropshare.databinding.FragmentLoginBinding
 import com.hamm.cropshare.extensions.createSnackbar
 import com.hamm.cropshare.extensions.createToast
 import com.hamm.cropshare.models.UserViewModel
+import com.hamm.cropshare.prefs
 import com.hamm.cropshare.ui.register.RegisterFragmentDirections
 
 class LoginFragment: Fragment() {
@@ -81,6 +82,9 @@ class LoginFragment: Fragment() {
             if (it) {
                 findNavController().popBackStack()
             }
+        }
+        userViewModel.userId.observe(viewLifecycleOwner) {
+            prefs.userUidPref = it
         }
     }
 }

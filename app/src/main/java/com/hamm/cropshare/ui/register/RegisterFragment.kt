@@ -1,6 +1,7 @@
 package com.hamm.cropshare.ui.register
 
 import android.os.Bundle
+import android.util.Patterns
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -13,6 +14,7 @@ import com.hamm.cropshare.R
 import com.hamm.cropshare.databinding.FragmentRegisterBinding
 import com.hamm.cropshare.helpers.FirebaseHelper
 import com.hamm.cropshare.models.UserViewModel
+import com.hamm.cropshare.prefs
 
 class RegisterFragment: Fragment() {
 
@@ -51,18 +53,20 @@ class RegisterFragment: Fragment() {
     }
 
     private fun checkLoginInformation() {
-        if (binding.registerEmailEdittext.text.isNotEmpty() && binding.registerEmailEdittext.text.toString().contains("@")) {
+        if (Patterns.EMAIL_ADDRESS.matcher(binding.registerEmailEdittext.text.toString()).matches()) {
             email = binding.registerEmailEdittext.text.toString()
         }
         if (binding.registerPasswordEdittext.text.isNotEmpty()) {
             password = binding.registerPasswordEdittext.text.toString()
         }
-        if (binding.registerConfirmPasswordEdittext.text.isNotEmpty() && binding.registerConfirmPasswordEdittext.text == binding.registerPasswordEdittext.text) {
+        if (binding.registerConfirmPasswordEdittext.text.isNotEmpty() && binding.registerConfirmPasswordEdittext.text.toString() == binding.registerPasswordEdittext.text.toString()) {
             confirmPassword = binding.registerConfirmPasswordEdittext.text.toString()
         }
         email?.let {
             password?.let { password ->
-                userViewModel.userRegister(it, password)
+                confirmPassword?.let { _ ->
+                    userViewModel.userRegister(it, password)
+                }
             }
         }
     }
@@ -80,6 +84,7 @@ class RegisterFragment: Fragment() {
             viewLifecycleOwner
         ) {
             userViewModel.userCreateInDB(it)
+            prefs.userUidPref = it
         }
     }
 }

@@ -18,6 +18,7 @@ import com.hamm.cropshare.extensions.createSnackbar
 import com.hamm.cropshare.extensions.hideKeyboard
 import com.hamm.cropshare.helpers.FirebaseHelper
 import com.hamm.cropshare.models.UserViewModel
+import com.hamm.cropshare.prefs
 
 class AccountFragment : Fragment() {
 
@@ -40,7 +41,6 @@ class AccountFragment : Fragment() {
 
         binding.updateZipcodeButton.isEnabled = false
         observeAccountChanges()
-        userViewModel.getUserZipCode()
         setupButtons()
         return binding.root
     }
@@ -56,6 +56,7 @@ class AccountFragment : Fragment() {
         }
 
         userViewModel.zipCodeChange.observe(viewLifecycleOwner) {
+            prefs.zipCodePref = it.toString()
             currentZipCode = it
             binding.updateZipEdittext.setText(it.toString())
             binding.updateZipcodeButton.isEnabled = false

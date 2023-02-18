@@ -46,17 +46,6 @@ fun isUserLoggedIn(): Boolean {
     return false
 }
 
-fun getCurrentZipCode(): Long? {
-    var zipCode: Long? = null
-    FirebaseHelper().firebaseUserUID?.let {
-        FirebaseHelper().fireStoreDatabase.collection("users").document(it)
-            .addSnapshotListener { value, _ ->
-                zipCode = value?.getLong("zipCode")
-            }
-    }
-    return zipCode
-}
-
 fun View.show() {
     visibility = View.VISIBLE
 }

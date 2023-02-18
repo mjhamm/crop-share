@@ -4,10 +4,12 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.google.firebase.firestore.FieldValue
+import com.google.firebase.firestore.SetOptions
 import com.hamm.cropshare.data.SellAmount
 import com.hamm.cropshare.data.Store
 import com.hamm.cropshare.data.StoreItem
 import com.hamm.cropshare.helpers.FirebaseHelper
+import com.hamm.cropshare.prefs
 
 class StoreViewModel : ViewModel() {
 
@@ -22,6 +24,10 @@ class StoreViewModel : ViewModel() {
     private var _storeName = MutableLiveData<String>()
     val storeName: LiveData<String>
         get() = _storeName
+
+    private var _isLoading = MutableLiveData<Boolean>()
+    val isLoading: LiveData<Boolean>
+        get() = _isLoading
 
 //    fun addNewStoreItem(storeItem: StoreItem) {
 //        items.add(storeItem)
@@ -39,9 +45,29 @@ class StoreViewModel : ViewModel() {
 //        }
 //    }
 
-    fun createNewStore(userId: String) {
-        FirebaseHelper().fireStoreDatabase.collection("stores")
-            .document(userId)
+    fun createNewStore(store: Store) {
+        _isLoading.value = true
+        val storeEntry = hashMapOf(
+            "store" to store
+        )
+        prefs.zipCodePref?.let {
+            FirebaseHelper().fireStoreDatabase.collection("stores")
+                .document(it)
+                .set(storeEntry)
+                .addOnCompleteListener {
+                    _store.value = store
+                    _isLoading.value = false
+                }
+                .addOnFailureListener {
+                    _isLoading.value = false
+                }
+        }
+
+        prefs.userUidPref?.let {
+            FirebaseHelper().fireStoreDatabase.collection("users")
+                .document(it)
+                .set(storeEntry, SetOptions.merge())
+        }
     }
 
     fun updateStoreName(storeName: String) {

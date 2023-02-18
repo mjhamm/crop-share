@@ -9,7 +9,9 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.google.firebase.firestore.QueryDocumentSnapshot
 import com.hamm.cropshare.data.Constants
+import com.hamm.cropshare.data.DataCache
 import com.hamm.cropshare.helpers.FirebaseHelper
+import com.hamm.cropshare.prefs
 
 class UserViewModel: ViewModel() {
 
@@ -41,6 +43,7 @@ class UserViewModel: ViewModel() {
         _isLoading.value = true
         FirebaseHelper().firebaseAuth.signInWithEmailAndPassword(email, password)
             .addOnSuccessListener {
+                _userId.value = it.user?.uid
                 _isLoggedIn.value = true
                 _isLoading.value = false
             }
@@ -62,7 +65,6 @@ class UserViewModel: ViewModel() {
     }
 
     fun userDeleteAccount() {
-        val uid = FirebaseHelper().firebaseAuth.currentUser?.uid
         _isLoading.value = true
 
         FirebaseHelper().firebaseAuth.currentUser?.let {
@@ -72,16 +74,20 @@ class UserViewModel: ViewModel() {
             }
         }
 
-        uid?.let {
+        prefs.userUidPref?.let {
             FirebaseHelper().fireStoreDatabase.collection("users")
                 .document(it)
                 .delete()
+                .addOnSuccessListener {
+                    prefs.userUidPref = null
+                }
         }
     }
 
     fun userCreateInDB(userId: String) {
         val userEntry = mapOf(
-            "Email" to FirebaseHelper().firebaseAuth.currentUser?.email
+            "Email" to FirebaseHelper().firebaseAuth.currentUser?.email,
+            "zipCode" to null
         )
         FirebaseHelper().fireStoreDatabase.collection("users").document(userId)
             .set(userEntry)

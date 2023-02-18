@@ -1,59 +1,29 @@
 package com.hamm.cropshare.data
 
 import android.content.Context
+import android.content.Context.MODE_PRIVATE
 import android.content.SharedPreferences
 import androidx.preference.PreferenceManager
+import com.hamm.cropshare.data.Constants.Companion.USER_ZIPCODE_DEFAULT_VALUE
 
-class DataCache {
+class DataCache(context: Context) {
 
-    val EMAIL_ADDRESS = "EMAIL_ADDRESS"
-    val USER_PASSWORD = "PASSWORD"
+    private val USER_ZIPCODE = "user_zipcode"
+    private val USER_UID = "user_uid"
 
-    fun defaultPreference(context: Context): SharedPreferences = PreferenceManager.getDefaultSharedPreferences(context)
+    private val privatePreferences: SharedPreferences = PreferenceManager.getDefaultSharedPreferences(context)
 
-    fun customPreference(context: Context, name: String): SharedPreferences = context.getSharedPreferences(name, Context.MODE_PRIVATE)
-
-    inline fun SharedPreferences.editMe(operation: (SharedPreferences.Editor) -> Unit) {
-        val editMe = edit()
-        operation(editMe)
-        editMe.apply()
+    fun clearPreferences() {
+        privatePreferences.edit().putString(USER_ZIPCODE, null).apply()
+        privatePreferences.edit().putString(USER_UID, null).apply()
     }
 
-    fun SharedPreferences.Editor.put(pair: Pair<String, Any>) {
-        val key = pair.first
-        val value = pair.second
-        when (value) {
-            is String -> putString(key, value)
-            is Int -> putInt(key, value)
-            is Boolean -> putBoolean(key, value)
-            is Long -> putLong(key, value)
-            is Float -> putFloat(key, value)
-            else -> error("Only primitive types can be stored in SharedPreferences")
-        }
-    }
+    var zipCodePref: String?
+        get() = privatePreferences.getString(USER_ZIPCODE, USER_ZIPCODE_DEFAULT_VALUE)
+        set(value) = privatePreferences.edit().putString(USER_ZIPCODE, value).apply()
 
-    var SharedPreferences.emailAddress
-        get() = getInt(EMAIL_ADDRESS, 0)
-        set(value) {
-            editMe {
-                it.putInt(EMAIL_ADDRESS, value)
-            }
-        }
-
-    var SharedPreferences.password
-        get() = getString(USER_PASSWORD, "")
-        set(value) {
-            editMe {
-                it.putString(USER_PASSWORD, value)
-            }
-        }
-
-    var SharedPreferences.clearValues
-        get() = run { }
-        set(value) {
-            editMe {
-                it.clear()
-            }
-        }
+    var userUidPref: String?
+        get() = privatePreferences.getString(USER_UID, "")
+        set(value) = privatePreferences.edit().putString(USER_UID, value).apply()
 
 }

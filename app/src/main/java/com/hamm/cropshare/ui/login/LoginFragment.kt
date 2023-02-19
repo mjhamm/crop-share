@@ -1,7 +1,9 @@
 package com.hamm.cropshare.ui.login
 
 import android.os.Bundle
+import android.text.Editable
 import android.text.InputType
+import android.text.TextWatcher
 import android.text.method.HideReturnsTransformationMethod
 import android.text.method.PasswordTransformationMethod
 import android.util.Patterns
@@ -23,6 +25,9 @@ import com.hamm.cropshare.ui.register.RegisterFragmentDirections
 class LoginFragment: Fragment() {
 
     private lateinit var binding: FragmentLoginBinding
+
+    private var email: String? = null
+    private var password: String? = null
 
     private val userViewModel: UserViewModel by activityViewModels()
 
@@ -59,12 +64,37 @@ class LoginFragment: Fragment() {
             }
         }
 
+        binding.loginEmailEdittext.addTextChangedListener(object : TextWatcher{
+            override fun beforeTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {}
+            override fun onTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {}
+            override fun afterTextChanged(p0: Editable?) {
+                email = p0.toString()
+                binding.loginButton.isEnabled = shouldEnableLoginButton()
+            }
+        })
+
+        binding.loginPasswordEdittext.addTextChangedListener(object : TextWatcher{
+            override fun beforeTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {}
+            override fun onTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {}
+            override fun afterTextChanged(p0: Editable?) {
+                password = p0.toString()
+                binding.loginButton.isEnabled = shouldEnableLoginButton()
+            }
+        })
+
         binding.registerTextview.setOnClickListener {
             if (!findNavController().popBackStack(R.id.navigation_register, false)) {
                 val action = LoginFragmentDirections.actionNavigationLoginToNavigationRegister()
                 findNavController().navigate(action)
             }
         }
+    }
+
+    private fun shouldEnableLoginButton(): Boolean {
+        if (Patterns.EMAIL_ADDRESS.matcher(getEmailPassword().first).matches() && getEmailPassword().second.isNotEmpty()) {
+            return true
+        }
+        return false
     }
 
     private fun loginUser() {

@@ -134,13 +134,10 @@ class UserViewModel: ViewModel() {
     }
 
     fun userUpdateZipCode(zipCode: Long) {
-        val zipCodeEntry = mapOf(
-            "zipCode" to zipCode
-        )
         FirebaseHelper().firebaseAuth.currentUser?.uid?.let { uid ->
             FirebaseHelper().fireStoreDatabase.collection("users")
                 .document(uid)
-                .set(zipCodeEntry)
+                .update("zipCode", zipCode)
                 .addOnSuccessListener {
                     _zipCodeChange.value = zipCode
                 }

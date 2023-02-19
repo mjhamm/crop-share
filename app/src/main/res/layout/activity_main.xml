@@ -38,7 +38,7 @@
         android:id="@+id/loading_indicator"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:background="@color/gray"
+        android:background="@color/loading_gray"
         android:visibility="gone"
         android:clickable="true">
 

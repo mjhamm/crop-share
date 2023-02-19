@@ -71,6 +71,7 @@ class UserViewModel: ViewModel() {
             it.delete().addOnSuccessListener {
                 _isLoggedIn.value = false
                 _isLoading.value = false
+                FirebaseHelper().firebaseAuth.signOut()
             }
         }
 

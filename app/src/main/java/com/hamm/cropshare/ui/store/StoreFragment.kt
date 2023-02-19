@@ -4,6 +4,8 @@ import android.content.Context
 import android.graphics.Canvas
 import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
+import android.text.Editable
+import android.text.TextWatcher
 import android.view.KeyEvent
 import android.view.LayoutInflater
 import android.view.View
@@ -28,6 +30,7 @@ import com.hamm.cropshare.data.Store
 import com.hamm.cropshare.data.StoreItem
 import com.hamm.cropshare.databinding.FragmentStoreBinding
 import com.hamm.cropshare.databinding.LayoutEditStoreItemBottomSheetBinding
+import com.hamm.cropshare.databinding.LayoutEnterZipBottomSheetBinding
 import com.hamm.cropshare.extensions.*
 import com.hamm.cropshare.listeners.StoreItemClickListener
 import com.hamm.cropshare.models.StoreViewModel
@@ -80,15 +83,14 @@ class StoreFragment : Fragment(), StoreItemClickListener {
         // Create a new store for user
         binding.createNewStoreContainer.createStoreButton.setOnClickListener {
             prefs.zipCodePref?.let {
-                if (isStoreNameValid() && it != USER_ZIPCODE_DEFAULT_VALUE) {
-                    println(it)
-                    storeViewModel.createNewStore(Store(binding.createNewStoreContainer.newStoreName.text.toString(), emptyList()))
+                val newStoreName = binding.createNewStoreContainer.newStoreName.text.toString()
+                if (newStoreName.isNotEmpty() && it != USER_ZIPCODE_DEFAULT_VALUE) {
+                    storeViewModel.createNewStore(Store(newStoreName, emptyList()))
                     hideKeyboard()
-                    //storeViewModel.updateStoreName(binding.storeNameEdittext.text.toString())
                 } else {
                     binding.storeNameEdittext.clearFocus()
                     hideKeyboard()
-                    createSnackbar(binding.root, "Store Name must not be empty")
+                    showEnterZipCodeDialog(newStoreName)
                 }
             } ?: run {
                 binding.storeNameEdittext.clearFocus()
@@ -97,14 +99,19 @@ class StoreFragment : Fragment(), StoreItemClickListener {
             }
         }
 
+        binding.createNewStoreContainer.newStoreName.addTextChangedListener(object : TextWatcher {
+            override fun beforeTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {}
+            override fun onTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {}
+
+            override fun afterTextChanged(p0: Editable?) {
+                binding.createNewStoreContainer.createStoreButton.isEnabled = p0?.isNotEmpty() == true
+            }
+        })
+
         // Add new item to store
         binding.addStoreItem.setOnClickListener {
             showAddNewItemDialog()
         }
-    }
-
-    private fun isStoreNameValid(): Boolean {
-        return binding.createNewStoreContainer.newStoreName.text.toString().isNotEmpty()
     }
 
     private fun observeData() {
@@ -211,6 +218,31 @@ class StoreFragment : Fragment(), StoreItemClickListener {
                 bottomSheet.dismiss()
             } else {
                 requireContext().createToast("There is an issue updating your item. Please check empty fields.")
+            }
+        }
+    }
+
+    private fun showEnterZipCodeDialog(storeName: String) {
+        val bottomSheet = BottomSheetDialog(requireContext(), R.style.DialogStyle)
+        val dialogBinding = LayoutEnterZipBottomSheetBinding.inflate(layoutInflater)
+
+        bottomSheet.setContentView(dialogBinding.root)
+        bottomSheet.show()
+
+        dialogBinding.saveZipCodeButton.setOnClickListener {
+            val enteredZipCode = dialogBinding.enterZipCodeEdittext.text.toString()
+            if (enteredZipCode.isNotEmpty() && enteredZipCode.length == 5) {
+                try {
+                    enteredZipCode.toLong()
+                    prefs.zipCodePref = enteredZipCode
+                    userViewModel.userUpdateZipCode(enteredZipCode.toLong())
+                    storeViewModel.createNewStore(Store(storeName, emptyList()))
+                    bottomSheet.dismiss()
+                } catch (exception: NumberFormatException) {
+                    createSnackbar(dialogBinding.root, "You must enter a valid zip code", 0)
+                }
+            } else {
+                createSnackbar(dialogBinding.root, "You must enter a valid zip code")
             }
         }
     }
@@ -335,7 +367,6 @@ class StoreFragment : Fragment(), StoreItemClickListener {
             binding.storeNameEdittext.setText(storeName)
             setupSwipeRecyclerView()
             setupEdittextCursor()
-
         } else {
             binding.storeLoginFlowContainer.root.show()
             binding.storeLayoutContainer.hide()

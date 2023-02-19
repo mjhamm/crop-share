@@ -83,8 +83,8 @@ class LoginFragment: Fragment() {
                 findNavController().popBackStack()
             }
         }
-        userViewModel.userId.observe(viewLifecycleOwner) {
-            prefs.userUidPref = it
-        }
+//        userViewModel.userId.observe(viewLifecycleOwner) {
+//            prefs.userUidPref = it
+//        }
     }
 }

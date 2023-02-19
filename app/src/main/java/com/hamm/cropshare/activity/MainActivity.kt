@@ -62,19 +62,22 @@ class MainActivity : AppCompatActivity() {
     private fun observeData(bottomNav: BottomNavigationView) {
         userViewModel.isLoading.observe(this) { showLoading(it) }
         userViewModel.storeExists.observe(this) {
-            if (it) {
+            if (it && isUserLoggedIn()) {
                 storeViewModel.getStore()
             }
         }
 
+        userViewModel.userId.observe(this) {
+            prefs.userUidPref = it
+        }
         userViewModel.zipCodeChange.observe(this) {
-            DataCache(this).zipCodePref = it.toString()
+            prefs.zipCodePref = it.toString()
         }
 
         FirebaseHelper().firebaseAuth.addAuthStateListener {
             if (it.currentUser == null) {
                 reloadUI(bottomNav, false)
-                prefs.zipCodePref = null
+                prefs.clearPreferences()
             } else {
                 reloadUI(bottomNav, true)
             }

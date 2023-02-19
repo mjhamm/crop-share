@@ -76,7 +76,7 @@
         app:layout_constraintEnd_toEndOf="parent"
         android:layout_marginTop="24dp"
         app:backgroundTint="@color/secondary_green"
-        android:background="@drawable/button_main_background"
+        android:background="@drawable/button_main_background_enabled"
         android:layout_marginHorizontal="16dp"
         app:cornerRadius="10dp"
         android:textAllCaps="false"

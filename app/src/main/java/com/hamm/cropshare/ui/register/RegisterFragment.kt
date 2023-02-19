@@ -84,7 +84,6 @@ class RegisterFragment: Fragment() {
             viewLifecycleOwner
         ) {
             userViewModel.userCreateInDB(it)
-            prefs.userUidPref = it
         }
     }
 }

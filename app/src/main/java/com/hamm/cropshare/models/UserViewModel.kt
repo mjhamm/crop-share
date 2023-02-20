@@ -57,6 +57,7 @@ class UserViewModel: ViewModel() {
         _isLoading.value = true
         FirebaseHelper().firebaseAuth.signOut()
         _isLoggedIn.value = false
+        prefs.clearPreferences()
         // Add in artificial delay to show loading screen when logout is pressed
         // This makes the user feel like something actually happened
         Handler(Looper.getMainLooper()).postDelayed({
@@ -67,27 +68,24 @@ class UserViewModel: ViewModel() {
     fun userDeleteAccount() {
         _isLoading.value = true
 
-        FirebaseHelper().firebaseAuth.currentUser?.let {
-            it.delete().addOnSuccessListener {
-                _isLoggedIn.value = false
-                _isLoading.value = false
-                FirebaseHelper().firebaseAuth.signOut()
-            }
-        }
-
         prefs.userUidPref?.let {
             FirebaseHelper().fireStoreDatabase.collection("users")
                 .document(it)
                 .delete()
-                .addOnSuccessListener {
-                    prefs.userUidPref = null
-                }
+        }
+
+        FirebaseHelper().firebaseAuth.currentUser?.let {
+            it.delete().addOnSuccessListener {
+                _isLoggedIn.value = false
+                FirebaseHelper().firebaseAuth.signOut()
+                _isLoading.value = false
+            }
         }
     }
 
-    fun userCreateInDB(userId: String) {
+    private fun userCreateInDB(userId: String) {
         val userEntry = mapOf(
-            "Email" to FirebaseHelper().firebaseAuth.currentUser?.email,
+            "email" to FirebaseHelper().firebaseAuth.currentUser?.email,
             "zipCode" to null
         )
         FirebaseHelper().fireStoreDatabase.collection("users").document(userId)
@@ -101,6 +99,8 @@ class UserViewModel: ViewModel() {
                 _isLoggedIn.value = true
                 authResult.user?.uid?.let { uid ->
                     _userId.value = uid
+                    userCreateInDB(uid)
+                    _storeExists.value = false
                 }
                 _isLoading.value = false
             }

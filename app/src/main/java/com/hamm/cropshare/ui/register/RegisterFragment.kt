@@ -129,11 +129,5 @@ class RegisterFragment: Fragment() {
                 findNavController().popBackStack()
             }
         }
-
-        userViewModel.userId.observe(
-            viewLifecycleOwner
-        ) {
-            userViewModel.userCreateInDB(it)
-        }
     }
 }

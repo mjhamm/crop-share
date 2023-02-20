@@ -6,6 +6,7 @@ import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
+import android.util.Log
 import android.view.KeyEvent
 import android.view.LayoutInflater
 import android.view.View
@@ -32,6 +33,7 @@ import com.hamm.cropshare.databinding.FragmentStoreBinding
 import com.hamm.cropshare.databinding.LayoutEditStoreItemBottomSheetBinding
 import com.hamm.cropshare.databinding.LayoutEnterZipBottomSheetBinding
 import com.hamm.cropshare.extensions.*
+import com.hamm.cropshare.helpers.FirebaseHelper
 import com.hamm.cropshare.listeners.StoreItemClickListener
 import com.hamm.cropshare.models.StoreViewModel
 import com.hamm.cropshare.models.UserViewModel
@@ -46,8 +48,6 @@ class StoreFragment : Fragment(), StoreItemClickListener {
     private var cachedStoreName: String? = null
 
     private var userHasStore = false
-
-    private var storeName: String? = null
     private var storeItems = listOf<StoreItem>()
 
     private val storeViewModel: StoreViewModel by activityViewModels()
@@ -69,6 +69,8 @@ class StoreFragment : Fragment(), StoreItemClickListener {
 
         adapter = MyStoreAdapter(this)
 
+        userViewModel.doesUserStoreExist()
+
         setupNavigateToLoginFlow()
         setupButtons()
 
@@ -86,6 +88,7 @@ class StoreFragment : Fragment(), StoreItemClickListener {
                 val newStoreName = binding.createNewStoreContainer.newStoreName.text.toString()
                 if (newStoreName.isNotEmpty() && it != USER_ZIPCODE_DEFAULT_VALUE) {
                     storeViewModel.createNewStore(Store(newStoreName, emptyList()))
+                    userHasStore = true
                     hideKeyboard()
                 } else {
                     binding.storeNameEdittext.clearFocus()
@@ -116,14 +119,28 @@ class StoreFragment : Fragment(), StoreItemClickListener {
 
     private fun observeData() {
         userViewModel.storeExists.observe(viewLifecycleOwner) {
-            updateCreateStoreVisibility(it, isUserLoggedIn())
+            if (it) {
+                storeViewModel.getStore()
+            }
+            userHasStore = it
         }
-        userViewModel.isLoggedIn.observe(viewLifecycleOwner) { updateScreen(it) }
+
+        FirebaseHelper().firebaseAuth.addAuthStateListener {
+            try {
+                if (it.currentUser == null) {
+                    updateScreen(false)
+                } else {
+                    updateScreen(true)
+                }
+            } catch (exception: Exception) {
+                Log.d("StoreFragment", exception.toString())
+            }
+        }
 
         storeViewModel.store.observe(viewLifecycleOwner) {
-            updateCreateStoreVisibility(storeExists = true, isUserLoggedIn = true)
-            storeName = it.storeName
-            binding.storeNameEdittext.setText(storeName)
+            cachedStoreName = it.storeName
+            binding.storeNameEdittext.setText(cachedStoreName)
+            updateScreen(true)
         }
 
         storeViewModel.items.observe(viewLifecycleOwner) {
@@ -141,24 +158,6 @@ class StoreFragment : Fragment(), StoreItemClickListener {
         adapter?.submitList(storeItems)
     }
 
-    private fun updateCreateStoreVisibility(storeExists: Boolean, isUserLoggedIn: Boolean) {
-        if (isUserLoggedIn) {
-            if (storeExists) {
-                binding.storeLoginFlowContainer.root.hide()
-                binding.createNewStoreContainer.root.hide()
-                binding.storeLayoutContainer.show()
-            } else {
-                binding.storeLoginFlowContainer.root.hide()
-                binding.createNewStoreContainer.root.show()
-                binding.storeLayoutContainer.hide()
-            }
-        } else {
-            binding.storeLoginFlowContainer.root.show()
-            binding.storeLayoutContainer.hide()
-            binding.createNewStoreContainer.root.hide()
-        }
-    }
-
     private fun setupEdittextCursor() {
         binding.storeNameEdittext.setOnEditorActionListener(object : OnEditorActionListener {
 
@@ -166,7 +165,7 @@ class StoreFragment : Fragment(), StoreItemClickListener {
                 when(p1) {
                     EditorInfo.IME_ACTION_DONE -> {
                         return if (p0?.text?.isEmpty() == true) {
-                            binding.storeNameEdittext.setText(storeName)
+                            binding.storeNameEdittext.setText(cachedStoreName)
                             requireContext().createToast("Your store name cannot be empty")
                             binding.storeNameEdittext.clearFocus()
                             false
@@ -355,18 +354,16 @@ class StoreFragment : Fragment(), StoreItemClickListener {
                 binding.storeLoginFlowContainer.root.hide()
                 binding.createNewStoreContainer.root.hide()
                 binding.storeLayoutContainer.show()
+                binding.storeItemsList.layoutManager = LinearLayoutManager(this.context)
+                binding.storeItemsList.adapter = adapter
+                binding.storeNameEdittext.setText(cachedStoreName)
+                setupSwipeRecyclerView()
+                setupEdittextCursor()
             } else {
                 binding.storeLoginFlowContainer.root.hide()
                 binding.createNewStoreContainer.root.show()
                 binding.storeLayoutContainer.hide()
             }
-
-            binding.storeItemsList.layoutManager = LinearLayoutManager(this.context)
-            binding.storeItemsList.adapter = adapter
-            cachedStoreName = storeName
-            binding.storeNameEdittext.setText(storeName)
-            setupSwipeRecyclerView()
-            setupEdittextCursor()
         } else {
             binding.storeLoginFlowContainer.root.show()
             binding.storeLayoutContainer.hide()

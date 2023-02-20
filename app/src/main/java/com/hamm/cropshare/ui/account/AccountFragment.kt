@@ -25,7 +25,6 @@ class AccountFragment : Fragment() {
     private var _binding: FragmentAccountBinding? = null
 
     private val userViewModel: UserViewModel by activityViewModels()
-    private var currentZipCode: Long? = null
 
     // This property is only valid between onCreateView and
     // onDestroyView.
@@ -39,7 +38,7 @@ class AccountFragment : Fragment() {
 
         _binding = FragmentAccountBinding.inflate(inflater, container, false)
 
-        binding.updateZipcodeButton.isEnabled = false
+        binding.updateAddressInfoButton.isEnabled = false
         observeAccountChanges()
         setupButtons()
         return binding.root
@@ -55,44 +54,60 @@ class AccountFragment : Fragment() {
             }
         }
 
-        userViewModel.zipCodeChange.observe(viewLifecycleOwner) {
-            prefs.zipCodePref = it.toString()
-            currentZipCode = it
-            binding.updateZipEdittext.setText(it.toString())
-            binding.updateZipcodeButton.isEnabled = false
+        userViewModel.streetAddress.observe(viewLifecycleOwner) {
+            binding.updateAddressInfoButton.isEnabled = false
+            binding.streetAddressEdittext.setText(it)
+            prefs.userStoreAddressPref = it
         }
+
+        userViewModel.zipCode.observe(viewLifecycleOwner) {
+            binding.updateAddressInfoButton.isEnabled = false
+            binding.zipCodeEdittext.setText(it)
+            prefs.userStoreZipCodePref = it
+        }
+    }
+
+    private fun validateAddress(): Boolean {
+        if (binding.streetAddressEdittext.text.isNotEmpty() && )
     }
 
     private fun setupButtons() {
-        binding.logoutButton.setOnClickListener {
-            userViewModel.userLogout()
-        }
-        binding.deleteAccountButton.setOnClickListener {
-            userViewModel.userDeleteAccount()
-        }
+        binding.updateAddressInfoButton.setOnClickListener {
+            if (validateAddress()) {
 
-        binding.updateZipcodeButton.setOnClickListener {
-            updateZipCode()
-        }
+            } else {
 
-        binding.updateZipEdittext.addTextChangedListener(object : TextWatcher {
-            override fun beforeTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {}
-            override fun onTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {}
-
-            override fun afterTextChanged(p0: Editable?) {
-                binding.updateZipcodeButton.isEnabled =
-                    !(p0?.isEmpty() == true || p0?.toString() == currentZipCode.toString())
             }
-        })
+        }
+//        binding.logoutButton.setOnClickListener {
+//            userViewModel.userLogout()
+//        }
+//        binding.deleteAccountButton.setOnClickListener {
+//            userViewModel.userDeleteAccount()
+//        }
+//
+//        binding.updateZipcodeButton.setOnClickListener {
+//            updateZipCode()
+//        }
+
+//        binding.updateZipEdittext.addTextChangedListener(object : TextWatcher {
+//            override fun beforeTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {}
+//            override fun onTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {}
+//
+//            override fun afterTextChanged(p0: Editable?) {
+//                binding.updateZipcodeButton.isEnabled =
+//                    !(p0?.isEmpty() == true || p0?.toString() == currentZipCode.toString())
+//            }
+//        })
 
         requireActivity().onBackPressedDispatcher.addCallback(this) {
             hideKeyboard()
-            binding.updateZipEdittext.clearFocus()
+            //binding.updateZipEdittext.clearFocus()
         }
 
     }
 
-    private fun updateZipCode() {
+    /*private fun updateZipCode() {
         val newZipCode = binding.updateZipEdittext.text.toString()
         if (newZipCode.isNotEmpty() && newZipCode.length == 5) {
             try {
@@ -111,7 +126,7 @@ class AccountFragment : Fragment() {
         binding.updateZipEdittext.clearFocus()
         binding.updateZipcodeButton.isEnabled = false
         hideKeyboard()
-    }
+    }*/
 
     override fun onDestroyView() {
         super.onDestroyView()

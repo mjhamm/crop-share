@@ -65,8 +65,8 @@ class MainActivity : AppCompatActivity() {
         userViewModel.userId.observe(this) {
             prefs.userUidPref = it
         }
-        userViewModel.zipCodeChange.observe(this) {
-            prefs.zipCodePref = it.toString()
+        userViewModel.location.observe(this) {
+            prefs.userStoreLocationPref = mutableSetOf(it.streetAddress, it.zipCode)
         }
 
         FirebaseHelper().firebaseAuth.addAuthStateListener {

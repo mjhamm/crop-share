@@ -1,6 +1,5 @@
 package com.hamm.cropshare.ui.store
 
-import android.content.Context
 import android.graphics.Canvas
 import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
@@ -26,7 +25,7 @@ import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.hamm.cropshare.R
 import com.hamm.cropshare.adapters.MyStoreAdapter
 import com.hamm.cropshare.data.Constants.Companion.USER_ZIPCODE_DEFAULT_VALUE
-import com.hamm.cropshare.data.SellAmount
+import com.hamm.cropshare.data.Location
 import com.hamm.cropshare.data.Store
 import com.hamm.cropshare.data.StoreItem
 import com.hamm.cropshare.databinding.FragmentStoreBinding
@@ -84,10 +83,10 @@ class StoreFragment : Fragment(), StoreItemClickListener {
     private fun setupButtons() {
         // Create a new store for user
         binding.createNewStoreContainer.createStoreButton.setOnClickListener {
-            prefs.zipCodePref?.let {
+            prefs.userStoreLocationPref?.let {
                 val newStoreName = binding.createNewStoreContainer.newStoreName.text.toString()
-                if (newStoreName.isNotEmpty() && it != USER_ZIPCODE_DEFAULT_VALUE) {
-                    storeViewModel.createNewStore(Store(newStoreName, emptyList()))
+                if (newStoreName.isNotEmpty()) {
+                    storeViewModel.createNewStore(Store(newStoreName, emptyList(), Location(it.first(), it.last())))
                     userHasStore = true
                     hideKeyboard()
                 } else {
@@ -233,9 +232,9 @@ class StoreFragment : Fragment(), StoreItemClickListener {
             if (enteredZipCode.isNotEmpty() && enteredZipCode.length == 5) {
                 try {
                     enteredZipCode.toLong()
-                    prefs.zipCodePref = enteredZipCode
+                    //prefs.zipCodePref = enteredZipCode
                     userViewModel.userUpdateZipCode(enteredZipCode.toLong())
-                    storeViewModel.createNewStore(Store(storeName, emptyList()))
+                    storeViewModel.createNewStore(Store(storeName, emptyList(), Location("", enteredZipCode)))
                     bottomSheet.dismiss()
                 } catch (exception: NumberFormatException) {
                     createSnackbar(dialogBinding.root, "You must enter a valid zip code", 0)

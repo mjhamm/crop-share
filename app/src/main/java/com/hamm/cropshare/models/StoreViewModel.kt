@@ -3,9 +3,8 @@ package com.hamm.cropshare.models
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.SetOptions
-import com.hamm.cropshare.data.SellAmount
+import com.hamm.cropshare.data.Location
 import com.hamm.cropshare.data.Store
 import com.hamm.cropshare.data.StoreItem
 import com.hamm.cropshare.helpers.FirebaseHelper
@@ -50,7 +49,7 @@ class StoreViewModel : ViewModel() {
         val storeEntry = hashMapOf(
             "store" to store
         )
-        prefs.zipCodePref?.let {
+        prefs.userStoreZipCodePref?.let {
             FirebaseHelper().fireStoreDatabase.collection("stores")
                 .document(it)
                 .set(storeEntry)
@@ -89,7 +88,7 @@ class StoreViewModel : ViewModel() {
 //                        val itemName = items["name"] as String
 //                        storeItems.add(StoreItem(itemName, "", 0.00))
 //                    }
-                    _store.value = Store("name", emptyList())
+                    _store.value = Store("name", emptyList(), Location("", ""))
                     //_items.value = storeItems
                 }
         }

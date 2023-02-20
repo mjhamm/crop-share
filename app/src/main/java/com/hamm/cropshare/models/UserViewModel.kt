@@ -10,6 +10,8 @@ import androidx.lifecycle.ViewModel
 import com.google.firebase.firestore.QueryDocumentSnapshot
 import com.hamm.cropshare.data.Constants
 import com.hamm.cropshare.data.DataCache
+import com.hamm.cropshare.data.Location
+import com.hamm.cropshare.data.Store
 import com.hamm.cropshare.helpers.FirebaseHelper
 import com.hamm.cropshare.prefs
 
@@ -31,9 +33,17 @@ class UserViewModel: ViewModel() {
     val isLoading: LiveData<Boolean>
         get() = _isLoading
 
-    private var _zipCodeChange = MutableLiveData<Long>()
-    val zipCodeChange: LiveData<Long>
-        get() = _zipCodeChange
+    private var _location = MutableLiveData<Location>()
+    val location: LiveData<Location>
+        get() = _location
+
+    private var _streetAddress = MutableLiveData<String>()
+    val streetAddress: LiveData<String>
+        get() = _streetAddress
+
+    private var _zipCode = MutableLiveData<String>()
+    val zipCode: LiveData<String>
+        get() = _zipCode
 
     private var _hasError = MutableLiveData<String>()
     val hasError: LiveData<String>
@@ -85,8 +95,7 @@ class UserViewModel: ViewModel() {
 
     private fun userCreateInDB(userId: String) {
         val userEntry = mapOf(
-            "email" to FirebaseHelper().firebaseAuth.currentUser?.email,
-            "zipCode" to null
+            "email" to FirebaseHelper().firebaseAuth.currentUser?.email
         )
         FirebaseHelper().fireStoreDatabase.collection("users").document(userId)
             .set(userEntry)
@@ -110,13 +119,25 @@ class UserViewModel: ViewModel() {
             }
     }
 
+    fun getUserStoreInformation() {
+        prefs.userUidPref?.let { uid ->
+            FirebaseHelper().fireStoreDatabase.collection("users")
+                .document(uid)
+                .addSnapshotListener { value, _ ->
+                    val store = value?.get("store") as Map<*, *>
+                    val location = store["location"] as Location
+                    _location.value = location
+                }
+        }
+    }
+
     fun getUserZipCode() {
         FirebaseHelper().firebaseAuth.currentUser?.uid?.let {
             FirebaseHelper().fireStoreDatabase.collection("users")
                 .document(it)
                 .addSnapshotListener { value, _ ->
                     if (value?.get("zipCode") != null) {
-                        _zipCodeChange.value = value.get("zipCode") as Long
+                        _zipCode.value = value.get("zipCode") as String
                     }
                 }
         }
@@ -133,13 +154,13 @@ class UserViewModel: ViewModel() {
         }
     }
 
-    fun userUpdateZipCode(zipCode: Long) {
+    fun userUpdateZipCode(zipCode: String) {
         FirebaseHelper().firebaseAuth.currentUser?.uid?.let { uid ->
             FirebaseHelper().fireStoreDatabase.collection("users")
                 .document(uid)
                 .update("zipCode", zipCode)
                 .addOnSuccessListener {
-                    _zipCodeChange.value = zipCode
+                    _zipCode.value = zipCode
                 }
                 .addOnFailureListener {
                     _hasError.value = Constants.ERROR_SETTING_ZIPCODE

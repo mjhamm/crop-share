@@ -51,7 +51,6 @@ class MainActivity : AppCompatActivity() {
         observeData(navView)
 
         userViewModel.getUserZipCode()
-        userViewModel.doesUserStoreExist()
     }
 
     private fun reloadUI(bottomNav: BottomNavigationView, isVisible: Boolean = false) {
@@ -66,11 +65,13 @@ class MainActivity : AppCompatActivity() {
             prefs.userUidPref = it
         }
         userViewModel.location.observe(this) {
-            prefs.userStoreLocationPref = mutableSetOf(it.streetAddress, it.zipCode)
+            prefs.userStoreZipCodePref = it.zipCode
+            prefs.userStoreAddressPref = it.streetAddress
         }
 
         FirebaseHelper().firebaseAuth.addAuthStateListener {
             if (it.currentUser == null) {
+                prefs.clearPreferences()
                 reloadUI(bottomNav, false)
             } else {
                 reloadUI(bottomNav, true)

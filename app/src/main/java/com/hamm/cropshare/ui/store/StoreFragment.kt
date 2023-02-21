@@ -30,7 +30,7 @@ import com.hamm.cropshare.data.Store
 import com.hamm.cropshare.data.StoreItem
 import com.hamm.cropshare.databinding.FragmentStoreBinding
 import com.hamm.cropshare.databinding.LayoutEditStoreItemBottomSheetBinding
-import com.hamm.cropshare.databinding.LayoutEnterZipBottomSheetBinding
+import com.hamm.cropshare.databinding.LayoutEnterLocationBottomSheetBinding
 import com.hamm.cropshare.extensions.*
 import com.hamm.cropshare.helpers.FirebaseHelper
 import com.hamm.cropshare.listeners.StoreItemClickListener
@@ -68,8 +68,6 @@ class StoreFragment : Fragment(), StoreItemClickListener {
 
         adapter = MyStoreAdapter(this)
 
-        userViewModel.doesUserStoreExist()
-
         setupNavigateToLoginFlow()
         setupButtons()
 
@@ -83,21 +81,21 @@ class StoreFragment : Fragment(), StoreItemClickListener {
     private fun setupButtons() {
         // Create a new store for user
         binding.createNewStoreContainer.createStoreButton.setOnClickListener {
-            prefs.userStoreLocationPref?.let {
-                val newStoreName = binding.createNewStoreContainer.newStoreName.text.toString()
-                if (newStoreName.isNotEmpty()) {
-                    storeViewModel.createNewStore(Store(newStoreName, emptyList(), Location(it.first(), it.last())))
-                    userHasStore = true
-                    hideKeyboard()
-                } else {
-                    binding.storeNameEdittext.clearFocus()
-                    hideKeyboard()
-                    showEnterZipCodeDialog(newStoreName)
+            val newStoreName = binding.createNewStoreContainer.newStoreName.text.toString()
+            if (prefs.userStoreAddressPref?.isNotEmpty() == true && prefs.userStoreZipCodePref?.isNotEmpty() == true) {
+                prefs.userStoreAddressPref?.let { address ->
+                    prefs.userStoreZipCodePref?.let { zip ->
+                        val location = Location(address, zip)
+                        storeViewModel.createNewStore(Store(newStoreName, emptyList(), location))
+                        userHasStore = true
+                        binding.storeNameEdittext.clearFocus()
+                        hideKeyboard()
+                    }
                 }
-            } ?: run {
+            } else {
                 binding.storeNameEdittext.clearFocus()
                 hideKeyboard()
-                createSnackbar(binding.root, "Zip Code must not be empty")
+                showEnterLocationDialog(newStoreName)
             }
         }
 
@@ -127,6 +125,7 @@ class StoreFragment : Fragment(), StoreItemClickListener {
         FirebaseHelper().firebaseAuth.addAuthStateListener {
             try {
                 if (it.currentUser == null) {
+                    userHasStore = false
                     updateScreen(false)
                 } else {
                     updateScreen(true)
@@ -220,29 +219,54 @@ class StoreFragment : Fragment(), StoreItemClickListener {
         }
     }
 
-    private fun showEnterZipCodeDialog(storeName: String) {
+    private fun showEnterLocationDialog(storeName: String) {
         val bottomSheet = BottomSheetDialog(requireContext(), R.style.DialogStyle)
-        val dialogBinding = LayoutEnterZipBottomSheetBinding.inflate(layoutInflater)
+        val dialogBinding = LayoutEnterLocationBottomSheetBinding.inflate(layoutInflater)
+
+        var newZip = ""
+        var newAddress = ""
 
         bottomSheet.setContentView(dialogBinding.root)
         bottomSheet.show()
 
-        dialogBinding.saveZipCodeButton.setOnClickListener {
-            val enteredZipCode = dialogBinding.enterZipCodeEdittext.text.toString()
-            if (enteredZipCode.isNotEmpty() && enteredZipCode.length == 5) {
-                try {
-                    enteredZipCode.toLong()
-                    //prefs.zipCodePref = enteredZipCode
-                    userViewModel.userUpdateZipCode(enteredZipCode.toLong())
-                    storeViewModel.createNewStore(Store(storeName, emptyList(), Location("", enteredZipCode)))
-                    bottomSheet.dismiss()
-                } catch (exception: NumberFormatException) {
-                    createSnackbar(dialogBinding.root, "You must enter a valid zip code", 0)
-                }
-            } else {
-                createSnackbar(dialogBinding.root, "You must enter a valid zip code")
+        dialogBinding.enterZipCodeEdittext.addTextChangedListener(object : TextWatcher {
+            override fun beforeTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {}
+            override fun onTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {}
+
+            override fun afterTextChanged(p0: Editable?) {
+                newZip = p0.toString()
+                dialogBinding.saveStoreLocationButton.isEnabled = newAddress.isNotEmpty() && isZipCodeValid(newZip)
+            }
+        })
+
+        dialogBinding.enterStreetAddressEdittext.addTextChangedListener(object : TextWatcher {
+            override fun beforeTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {}
+            override fun onTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {}
+
+            override fun afterTextChanged(p0: Editable?) {
+                newAddress = p0.toString()
+                dialogBinding.saveStoreLocationButton.isEnabled = newAddress.isNotEmpty() && isZipCodeValid(newZip)
+            }
+        })
+
+        dialogBinding.saveStoreLocationButton.setOnClickListener {
+            prefs.userStoreAddressPref = newAddress
+            prefs.userStoreZipCodePref = newZip
+            userViewModel.updateUserStoreLocation(Location(newAddress, newZip))
+            storeViewModel.createNewStore(Store(storeName, emptyList(), Location(newAddress, newZip)))
+        }
+    }
+
+    private fun isZipCodeValid(zipCode: String): Boolean {
+        if (zipCode.isNotEmpty() && zipCode.length == 5) {
+            return try {
+                zipCode.toLong()
+                true
+            } catch (exception: Exception) {
+                false
             }
         }
+        return false
     }
 
     private fun showAddNewItemDialog() {

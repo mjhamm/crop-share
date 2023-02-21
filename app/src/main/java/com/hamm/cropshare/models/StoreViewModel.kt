@@ -81,14 +81,14 @@ class StoreViewModel : ViewModel() {
             FirebaseHelper().fireStoreDatabase.collection("users")
                 .document(uid)
                 .addSnapshotListener { value, _ ->
-                    //val store = value?.get("store") as Map<*, *>
-                    //val name = store["storeName"] as String
+                    val store = value?.get("store") as Map<*, *>
+                    val name = store["storeName"] as String
 //                    val storeItems = mutableListOf<StoreItem>()
 //                    for (items in store["items"] as ArrayList<HashMap<*, *>>) {
 //                        val itemName = items["name"] as String
 //                        storeItems.add(StoreItem(itemName, "", 0.00))
 //                    }
-                    _store.value = Store("name", emptyList(), Location("", ""))
+                    _store.value = Store(name, emptyList(), Location("", ""))
                     //_items.value = storeItems
                 }
         }

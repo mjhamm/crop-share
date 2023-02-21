@@ -67,7 +67,6 @@ class UserViewModel: ViewModel() {
         _isLoading.value = true
         FirebaseHelper().firebaseAuth.signOut()
         _isLoggedIn.value = false
-        prefs.clearPreferences()
         // Add in artificial delay to show loading screen when logout is pressed
         // This makes the user feel like something actually happened
         Handler(Looper.getMainLooper()).postDelayed({
@@ -125,7 +124,24 @@ class UserViewModel: ViewModel() {
                 .document(uid)
                 .addSnapshotListener { value, _ ->
                     val store = value?.get("store") as Map<*, *>
-                    val location = store["location"] as Location
+                    val location = store["location"] as Map<*, *>
+                    val streetAddress = location["streetAddress"] as String
+                    val zipCode = location["zipCode"] as String
+                    _location.value = Location(streetAddress, zipCode)
+                }
+        }
+    }
+
+    fun updateUserStoreLocation(location: Location) {
+        val locationEntry = mapOf(
+            "streetAddress" to location.streetAddress,
+            "zipCode" to location.zipCode
+        )
+        prefs.userUidPref?.let {
+            FirebaseHelper().fireStoreDatabase.collection("users")
+                .document(it)
+                .update("store.location", locationEntry)
+                .addOnSuccessListener {
                     _location.value = location
                 }
         }
@@ -148,8 +164,9 @@ class UserViewModel: ViewModel() {
             FirebaseHelper().fireStoreDatabase.collection("users")
                 .document(uid)
                 .addSnapshotListener { value, _ ->
-                    val store = value?.get("store")
-                    _storeExists.value = store != null
+                    val store = value?.get("store") as Map<*, *>
+                    val storeName = store["storeName"] as String
+                    _storeExists.value = storeName.isNotEmpty()
                 }
         }
     }

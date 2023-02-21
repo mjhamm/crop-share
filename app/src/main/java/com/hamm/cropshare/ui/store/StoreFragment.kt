@@ -137,8 +137,9 @@ class StoreFragment : Fragment(), StoreItemClickListener {
 
         storeViewModel.store.observe(viewLifecycleOwner) {
             cachedStoreName = it.storeName
-            binding.storeNameEdittext.setText(cachedStoreName)
+            userHasStore = true
             updateScreen(true)
+            binding.storeNameEdittext.setText(cachedStoreName)
         }
 
         storeViewModel.items.observe(viewLifecycleOwner) {
@@ -254,6 +255,8 @@ class StoreFragment : Fragment(), StoreItemClickListener {
             prefs.userStoreZipCodePref = newZip
             userViewModel.updateUserStoreLocation(Location(newAddress, newZip))
             storeViewModel.createNewStore(Store(storeName, emptyList(), Location(newAddress, newZip)))
+            bottomSheet.dismiss()
+            hideKeyboard()
         }
     }
 

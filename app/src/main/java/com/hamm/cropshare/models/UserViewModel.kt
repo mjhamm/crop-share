@@ -9,6 +9,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.google.firebase.firestore.QueryDocumentSnapshot
 import com.hamm.cropshare.data.Constants
+import com.hamm.cropshare.data.Constants.Companion.ERROR_GETTING_STORE_INFO
 import com.hamm.cropshare.data.DataCache
 import com.hamm.cropshare.data.Location
 import com.hamm.cropshare.data.Store
@@ -86,7 +87,6 @@ class UserViewModel: ViewModel() {
         FirebaseHelper().firebaseAuth.currentUser?.let {
             it.delete().addOnSuccessListener {
                 _isLoggedIn.value = false
-                FirebaseHelper().firebaseAuth.signOut()
                 _isLoading.value = false
             }
         }
@@ -122,12 +122,19 @@ class UserViewModel: ViewModel() {
         prefs.userUidPref?.let { uid ->
             FirebaseHelper().fireStoreDatabase.collection("users")
                 .document(uid)
-                .addSnapshotListener { value, _ ->
-                    val store = value?.get("store") as Map<*, *>
-                    val location = store["location"] as Map<*, *>
-                    val streetAddress = location["streetAddress"] as String
-                    val zipCode = location["zipCode"] as String
-                    _location.value = Location(streetAddress, zipCode)
+                .get()
+                .addOnCompleteListener {
+                    if (it.isSuccessful) {
+                        try {
+                            val store = it.result?.get("store") as Map<*, *>
+                            val location = store["location"] as Map<*, *>
+                            val streetAddress = location["streetAddress"] as String
+                            val zipCode = location["zipCode"] as String
+                            _location.value = Location(streetAddress, zipCode)
+                        } catch (exception: NullPointerException) {
+                            Log.d("UserViewModel", "Error retrieving user store info")
+                        }
+                    }
                 }
         }
     }

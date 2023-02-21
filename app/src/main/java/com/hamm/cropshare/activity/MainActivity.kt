@@ -50,6 +50,10 @@ class MainActivity : AppCompatActivity() {
         navView.setupWithNavController(navController)
         observeData(navView)
 
+        if (prefs.userUidPref?.isEmpty() == true) {
+            prefs.userUidPref = FirebaseHelper().firebaseUserUID
+        }
+
         userViewModel.getUserZipCode()
     }
 

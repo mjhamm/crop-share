@@ -1,8 +1,10 @@
 package com.hamm.cropshare.models
 
+import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.SetOptions
 import com.hamm.cropshare.data.Location
 import com.hamm.cropshare.data.Store
@@ -28,9 +30,22 @@ class StoreViewModel : ViewModel() {
     val isLoading: LiveData<Boolean>
         get() = _isLoading
 
-//    fun addNewStoreItem(storeItem: StoreItem) {
-//        items.add(storeItem)
-//    }
+    fun addNewStoreItem(currentItems: List<StoreItem>) {
+        prefs.userUidPref?.let { uid ->
+            FirebaseHelper().fireStoreDatabase.collection("users")
+                .document(uid)
+                .update("store.storeItems", currentItems)
+                .addOnCompleteListener {
+                    if (it.isSuccessful) {
+                        try {
+                            _items.value = currentItems
+                        } catch (exception: Exception) {
+                            Log.d("StoreViewModel", exception.toString())
+                        }
+                    }
+                }
+        }
+    }
 //
 //    fun removeStoreItem(position: Int) {
 //        items.removeAt(position)
@@ -80,16 +95,32 @@ class StoreViewModel : ViewModel() {
         FirebaseHelper().firebaseUserUID?.let { uid ->
             FirebaseHelper().fireStoreDatabase.collection("users")
                 .document(uid)
-                .addSnapshotListener { value, _ ->
-                    val store = value?.get("store") as Map<*, *>
-                    val name = store["storeName"] as String
-//                    val storeItems = mutableListOf<StoreItem>()
-//                    for (items in store["items"] as ArrayList<HashMap<*, *>>) {
-//                        val itemName = items["name"] as String
-//                        storeItems.add(StoreItem(itemName, "", 0.00))
-//                    }
-                    _store.value = Store(name, emptyList(), Location("", ""))
-                    //_items.value = storeItems
+                .get()
+                .addOnCompleteListener {
+                    try {
+                        val store = it.result?.get("store") as Map<*, *>
+                        val storeName = store["storeName"] as String
+                        val storeItems = store["storeItems"] as ArrayList<Map<*, *>>
+                        val items = mutableListOf<StoreItem>()
+                        for (item in storeItems) {
+                            val price: Long = try {
+                                item["itemPrice"] as Long
+                            } catch (_: Exception) {
+                                val priceAsDouble = item["itemPrice"] as Double
+                                priceAsDouble.toLong()
+                            }
+                            val storeItem = StoreItem(
+                                item["itemName"] as String,
+                                item["itemQuantityType"] as String,
+                                price
+                            )
+                            items.add(storeItem)
+                        }
+                        _store.value = Store(storeName, items)
+                        _items.value = items
+                    } catch (exception: Exception) {
+                        Log.d("StoreViewModel", exception.toString())
+                    }
                 }
         }
     }

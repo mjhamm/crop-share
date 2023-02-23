@@ -42,26 +42,39 @@ class MainActivity : AppCompatActivity() {
         // Weird code that has to be implemented this way to find main container when switching
         // from <fragment> tag in xml to <FragmentContainerView>
         val navHostFragment = supportFragmentManager.findFragmentById(R.id.nav_host_fragment_activity_main) as NavHostFragment
-        // Passing each menu ID as a set of Ids because each
-        // menu should be considered as top level destinations.
+
         val navController = navHostFragment.navController
+        // Update the UI based on whether the user is logged in or not
         reloadUI(navView, isUserLoggedIn())
         setupBottomNav(navView, navController)
         navView.setupWithNavController(navController)
+        // setup our observers from data within our view models
         observeData(navView)
 
+        // Because we use the User ID to make calls to Firebase, we need to check if
+        // it is null and if it is, get the UID from their Firebase user if they are logged in
         if (prefs.userUidPref?.isEmpty() == true) {
-            prefs.userUidPref = FirebaseHelper().firebaseUserUID
+            FirebaseHelper().firebaseUserUID?.let {
+                prefs.userUidPref = it
+            }
         }
 
         userViewModel.getUserZipCode()
     }
 
+    /**
+     * Updates the Bottom Navigation Bar to either show/hide the accounts item based
+     * on whether or not the user is logged in
+     */
     private fun reloadUI(bottomNav: BottomNavigationView, isVisible: Boolean = false) {
         invalidateOptionsMenu()
         bottomNav.menu.findItem(R.id.navigation_account).isVisible = isVisible
     }
 
+    /**
+     * A list of all of the observers that are listening for changed in the values that are
+     * coming back from the different View Models
+     */
     private fun observeData(bottomNav: BottomNavigationView) {
         userViewModel.isLoading.observe(this) { showLoading(it) }
 

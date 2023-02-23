@@ -12,13 +12,17 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.google.android.material.bottomsheet.BottomSheetDialog
+import com.hamm.cropshare.R
 import com.hamm.cropshare.adapters.AccountListAdapter
 import com.hamm.cropshare.data.AccountListItem
 import com.hamm.cropshare.data.Constants.Companion.ERROR_GETTING_STORE_INFO
 import com.hamm.cropshare.data.Location
+import com.hamm.cropshare.data.StoreItem
 import com.hamm.cropshare.databinding.FragmentAccountBinding
-import com.hamm.cropshare.extensions.createSnackbar
-import com.hamm.cropshare.extensions.hideKeyboard
+import com.hamm.cropshare.databinding.LayoutDeleteAccountBottomSheetBinding
+import com.hamm.cropshare.databinding.LayoutEditStoreItemBottomSheetBinding
+import com.hamm.cropshare.extensions.*
 import com.hamm.cropshare.helpers.FirebaseHelper
 import com.hamm.cropshare.listeners.AccountListItemListener
 import com.hamm.cropshare.models.UserViewModel
@@ -165,16 +169,30 @@ class AccountFragment : Fragment(), AccountListItemListener {
         return false
     }
 
+    private fun showDeleteAccountDialog() {
+        val bottomSheet = BottomSheetDialog(requireContext(), R.style.DialogStyle)
+        val dialogBinding = LayoutDeleteAccountBottomSheetBinding.inflate(layoutInflater)
+        bottomSheet.setContentView(dialogBinding.root)
+        bottomSheet.show()
+
+        dialogBinding.cancelDeleteButton.setOnClickListener {
+            bottomSheet.dismiss()
+        }
+        dialogBinding.deleteAccountButton.setOnClickListener {
+            userViewModel.userDeleteAccount()
+        }
+    }
+
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
     }
 
     override fun onAccountListItemClicked(accountItem: AccountListItem, position: Int) {
-        when(accountItem) {
-            AccountListItem.ACCOUNT_SETTINGS -> {}
-            AccountListItem.LOGOUT -> { userViewModel.userLogout() }
-            AccountListItem.DELETE_ACCOUNT -> { userViewModel.userDeleteAccount() }
+        when(position) {
+            0 -> {}
+            1 -> { userViewModel.userLogout() }
+            2 -> { showDeleteAccountDialog() }
         }
     }
 }

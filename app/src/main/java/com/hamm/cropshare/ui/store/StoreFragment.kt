@@ -24,7 +24,6 @@ import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.hamm.cropshare.R
 import com.hamm.cropshare.adapters.MyStoreAdapter
-import com.hamm.cropshare.data.Constants.Companion.USER_ZIPCODE_DEFAULT_VALUE
 import com.hamm.cropshare.data.Location
 import com.hamm.cropshare.data.Store
 import com.hamm.cropshare.data.StoreItem
@@ -47,7 +46,7 @@ class StoreFragment : Fragment(), StoreItemClickListener {
     private var cachedStoreName: String? = null
 
     private var userHasStore = false
-    private var storeItems = listOf<StoreItem>()
+    private var storeItems = mutableListOf<StoreItem>()
 
     private val storeViewModel: StoreViewModel by activityViewModels()
     private val userViewModel: UserViewModel by activityViewModels()
@@ -73,7 +72,7 @@ class StoreFragment : Fragment(), StoreItemClickListener {
 
         observeData()
 
-        updateScreen(isUserLoggedIn())
+        storeViewModel.getStore()
 
         return root
     }
@@ -115,13 +114,6 @@ class StoreFragment : Fragment(), StoreItemClickListener {
     }
 
     private fun observeData() {
-        userViewModel.storeExists.observe(viewLifecycleOwner) {
-            if (it) {
-                storeViewModel.getStore()
-            }
-            userHasStore = it
-        }
-
         FirebaseHelper().firebaseAuth.addAuthStateListener {
             try {
                 if (it.currentUser == null) {
@@ -138,6 +130,7 @@ class StoreFragment : Fragment(), StoreItemClickListener {
         storeViewModel.store.observe(viewLifecycleOwner) {
             cachedStoreName = it.storeName
             userHasStore = true
+            adapter?.submitList(it.storeItems)
             updateScreen(true)
             binding.storeNameEdittext.setText(cachedStoreName)
         }
@@ -148,7 +141,7 @@ class StoreFragment : Fragment(), StoreItemClickListener {
             } else {
                 binding.emptyStoreTextview.show()
             }
-            storeItems = it
+            storeItems = it.toMutableList()
             updateData(it)
         }
     }
@@ -202,20 +195,25 @@ class StoreFragment : Fragment(), StoreItemClickListener {
         bottomSheet.show()
 
         dialogBinding.saveItemChangesButton.setOnClickListener {
+            val price: String
             val itemName = dialogBinding.updateItemName.text.toString()
             val itemPrice = dialogBinding.updateItemPrice.text.toString()
             val itemQuantityType = dialogBinding.updateItemQuantityType.text.toString()
-            val updatedItem = StoreItem(
-                itemName.ifEmpty { storeItem.itemName },
-                itemQuantityType,
-                convertPriceToDouble(itemPrice) ?: storeItem.itemPrice)
-            if (isUpdatedItemValid(updatedItem)) {
-                // TODO
-                //storeViewModel.updateStoreItem(position, updatedItem)
-                adapter?.notifyItemChanged(position)
-                bottomSheet.dismiss()
+            if (itemPrice.convertPriceToLong()) {
+                val updatedItem = StoreItem(
+                    itemName.ifEmpty { storeItem.itemName },
+                    itemQuantityType,
+                    itemPrice.toLong())
+                if (isUpdatedItemValid(updatedItem)) {
+                    // TODO
+                    //storeViewModel.updateStoreItem(position, updatedItem)
+                    adapter?.notifyItemChanged(position)
+                    bottomSheet.dismiss()
+                } else {
+                    requireContext().createToast("There is an issue updating your item. Please check empty fields.")
+                }
             } else {
-                requireContext().createToast("There is an issue updating your item. Please check empty fields.")
+                requireContext().createToast("There is an issue with your price.")
             }
         }
     }
@@ -285,22 +283,23 @@ class StoreFragment : Fragment(), StoreItemClickListener {
         bottomSheet.show()
 
         dialogBinding.saveItemChangesButton.setOnClickListener {
+            val price: String
             val itemName = dialogBinding.updateItemName.text.toString()
             val itemPrice = dialogBinding.updateItemPrice.text.toString()
             val itemQuantityType = dialogBinding.updateItemQuantityType.text.toString()
-            if (itemPrice.isEmpty()) {
-                requireContext().createToast("There is an issue adding your item. Please check empty fields.")
-            } else {
-                val addedItem = StoreItem(itemName, itemQuantityType, convertPriceToDouble(itemPrice))
+            if (itemPrice.convertPriceToLong()) {
+                val addedItem = StoreItem(itemName, itemQuantityType, itemPrice.toLong())
                 if (isUpdatedItemValid(addedItem)) {
-                    // TODO
-                    //storeViewModel.addNewStoreItem(addedItem)
+                    storeItems.add(addedItem)
+                    storeViewModel.addNewStoreItem(storeItems)
                     adapter?.notifyDataSetChanged()
                     bottomSheet.dismiss()
                     binding.emptyStoreTextview.visibility = View.GONE
                 } else {
                     requireContext().createToast("There is an issue adding your item. Please check empty fields.")
                 }
+            } else {
+                requireContext().createToast("There is an issue with you price.")
             }
         }
     }

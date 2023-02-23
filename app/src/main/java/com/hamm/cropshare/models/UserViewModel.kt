@@ -8,6 +8,7 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.google.firebase.firestore.QueryDocumentSnapshot
+import com.google.firebase.firestore.SetOptions
 import com.hamm.cropshare.data.Constants
 import com.hamm.cropshare.data.Constants.Companion.ERROR_GETTING_STORE_INFO
 import com.hamm.cropshare.data.DataCache
@@ -87,6 +88,9 @@ class UserViewModel: ViewModel() {
         FirebaseHelper().firebaseAuth.currentUser?.let {
             it.delete().addOnSuccessListener {
                 _isLoggedIn.value = false
+                _isLoading.value = false
+            }.addOnFailureListener {exception ->
+            Log.d("Failure", exception.toString())
                 _isLoading.value = false
             }
         }
@@ -170,10 +174,13 @@ class UserViewModel: ViewModel() {
         FirebaseHelper().firebaseUserUID?.let { uid ->
             FirebaseHelper().fireStoreDatabase.collection("users")
                 .document(uid)
-                .addSnapshotListener { value, _ ->
-                    val store = value?.get("store") as Map<*, *>
-                    val storeName = store["storeName"] as String
-                    _storeExists.value = storeName.isNotEmpty()
+                .get()
+                .addOnCompleteListener {
+                    if (it.isSuccessful) {
+                        val store = it.result?.get("store") as Map<*, *>
+                        val storeName = store["storeName"] as String
+                        _storeExists.value = storeName.isNotEmpty()
+                    }
                 }
         }
     }

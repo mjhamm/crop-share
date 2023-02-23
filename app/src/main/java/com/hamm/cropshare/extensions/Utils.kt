@@ -2,22 +2,20 @@ package com.hamm.cropshare.extensions
 
 import android.app.Activity
 import android.content.Context
-import android.util.Log
-import android.view.Menu
 import android.view.View
-import android.view.WindowInsets
-import android.view.WindowInsetsAnimation
 import android.view.inputmethod.InputMethodManager
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import com.google.android.material.snackbar.Snackbar
-import com.google.firebase.auth.FirebaseUser
 import com.hamm.cropshare.data.StoreItem
 import com.hamm.cropshare.helpers.FirebaseHelper
+import java.math.BigDecimal
+import java.math.RoundingMode
+import java.util.*
 
 fun isUpdatedItemValid(storeItem: StoreItem): Boolean {
     storeItem.itemPrice?.let {
-        if (storeItem.itemName?.isEmpty() == true || it < 0 || storeItem.itemQuantityType?.isEmpty() == true) {
+        if (storeItem.itemName?.isEmpty() == true || it > 0 || storeItem.itemQuantityType?.isEmpty() == true) {
             return false
         }
         return true
@@ -26,13 +24,19 @@ fun isUpdatedItemValid(storeItem: StoreItem): Boolean {
     }
 }
 
-fun convertPriceToDouble(updatedPrice: String): Double? {
+fun String.convertPriceToLong(): Boolean {
     return try {
-        updatedPrice.toDouble()
-    } catch (exception: NumberFormatException) {
-        Log.e("convertPriceToDouble", exception.toString())
-        null
+        this.toLong()
+        true
+    } catch (_: NumberFormatException) {
+        false
     }
+}
+
+fun Long.convertToCurrency(): String {
+    val dec = BigDecimal(this)
+    dec.setScale(2, RoundingMode.HALF_DOWN)
+    return String.format(Locale.US, ".2d", dec)
 }
 
 fun Context.createToast(message: CharSequence) = Toast.makeText(this, message, Toast.LENGTH_SHORT).show()

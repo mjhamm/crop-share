@@ -6,6 +6,8 @@
     <string name="title_register">Register</string>
     <string name="title_login">Login</string>
 
+    <string name="delete_account_warning">Are you sure you want to delete your account? This cannot be undone.</string>
+
     <!-- Registration & Login -->
     <string name="already_have_account"><u><b>Already have an account?</b></u></string>
     <string name="dont_have_account"><u><b>Don\'t have an account?</b></u></string>

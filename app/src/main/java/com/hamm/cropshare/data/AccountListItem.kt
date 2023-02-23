@@ -3,8 +3,8 @@ package com.hamm.cropshare.data
 import com.hamm.cropshare.R
 
 enum class AccountListItem(
-    var itemImage: Int,
-    var itemTitle: String
+    val itemImage: Int,
+    val itemTitle: String
 ) {
     ACCOUNT_SETTINGS(R.drawable.baseline_person_outline_24, "Account Settings"),
     LOGOUT(R.drawable.baseline_logout_24, "Logout"),

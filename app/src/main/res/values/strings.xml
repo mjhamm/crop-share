@@ -5,6 +5,7 @@
     <string name="title_account">Account</string>
     <string name="title_register">Register</string>
     <string name="title_login">Login</string>
+    <string name="title_account_settings">Account Settings</string>
 
     <string name="delete_account_warning">Are you sure you want to delete your account? This cannot be undone.</string>
 

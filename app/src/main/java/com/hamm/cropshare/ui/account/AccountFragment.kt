@@ -183,6 +183,11 @@ class AccountFragment : Fragment(), AccountListItemListener {
         }
     }
 
+    private fun navigateToAccountSettings() {
+        val action = AccountFragmentDirections.actionNavigationAccountToNavigationAccountSettings()
+        findNavController().navigate(action)
+    }
+
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
@@ -190,7 +195,7 @@ class AccountFragment : Fragment(), AccountListItemListener {
 
     override fun onAccountListItemClicked(accountItem: AccountListItem, position: Int) {
         when(position) {
-            0 -> {}
+            0 -> { navigateToAccountSettings()}
             1 -> { userViewModel.userLogout() }
             2 -> { showDeleteAccountDialog() }
         }

@@ -195,7 +195,6 @@ class StoreFragment : Fragment(), StoreItemClickListener {
         bottomSheet.show()
 
         dialogBinding.saveItemChangesButton.setOnClickListener {
-            val price: String
             val itemName = dialogBinding.updateItemName.text.toString()
             val itemPrice = dialogBinding.updateItemPrice.text.toString()
             val itemQuantityType = dialogBinding.updateItemQuantityType.text.toString()
@@ -205,8 +204,8 @@ class StoreFragment : Fragment(), StoreItemClickListener {
                     itemQuantityType,
                     itemPrice.toLong())
                 if (isUpdatedItemValid(updatedItem)) {
-                    // TODO
-                    //storeViewModel.updateStoreItem(position, updatedItem)
+                    storeItems.add(updatedItem)
+                    storeViewModel.updateStoreItem(storeItems)
                     adapter?.notifyItemChanged(position)
                     bottomSheet.dismiss()
                 } else {
@@ -283,7 +282,6 @@ class StoreFragment : Fragment(), StoreItemClickListener {
         bottomSheet.show()
 
         dialogBinding.saveItemChangesButton.setOnClickListener {
-            val price: String
             val itemName = dialogBinding.updateItemName.text.toString()
             val itemPrice = dialogBinding.updateItemPrice.text.toString()
             val itemQuantityType = dialogBinding.updateItemQuantityType.text.toString()

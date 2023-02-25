@@ -41,6 +41,9 @@
         <action
             android:id="@+id/action_navigation_account_to_navigation_search"
             app:destination="@id/navigation_search" />
+        <action
+            android:id="@+id/action_navigation_account_to_navigation_account_settings"
+            app:destination="@id/navigation_account_settings" />
     </fragment>
 
     <fragment
@@ -70,5 +73,11 @@
             app:popEnterAnim="@android:anim/slide_in_left"
             app:popExitAnim="@android:anim/slide_out_right" />
     </fragment>
+
+    <fragment
+        android:id="@+id/navigation_account_settings"
+        android:name="com.hamm.cropshare.ui.account.AccountSettingsFragment"
+        android:label="@string/title_account_settings"
+        tools:layout="@layout/fragment_account_settings"/>
 
 </navigation>

@@ -17,7 +17,7 @@ data class StoreItem(
 ) {
     fun getPrice(): String {
         val dec = itemPrice?.let { BigDecimal(it) }
-        dec?.setScale(2, RoundingMode.FLOOR)
+        dec?.setScale(2)
         return "$${String.format(Locale.US, "%.2f", dec)}"
     }
 }

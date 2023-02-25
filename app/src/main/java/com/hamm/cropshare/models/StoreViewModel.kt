@@ -51,13 +51,22 @@ class StoreViewModel : ViewModel() {
 //        items.removeAt(position)
 //    }
 
-//    fun updateStoreItem(position: Int, storeItem: StoreItem) {
-//        with(items[position]) {
-//            itemName = storeItem.itemName
-//            itemPrice = storeItem.itemPrice
-//            itemQuantityType = storeItem.itemQuantityType
-//        }
-//    }
+    fun updateStoreItem(currentItems: List<StoreItem>) {
+        prefs.userUidPref?.let { uid ->
+            FirebaseHelper().fireStoreDatabase.collection("users")
+                .document(uid)
+                .update("store.storeItems", currentItems)
+                .addOnCompleteListener {
+                    if (it.isSuccessful) {
+                        try {
+                            _items.value = currentItems
+                        } catch (exception: Exception) {
+                            Log.d("StoreViewModel", exception.toString())
+                        }
+                    }
+                }
+        }
+    }
 
     fun createNewStore(store: Store) {
         _isLoading.value = true
